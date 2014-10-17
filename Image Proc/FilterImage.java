@@ -22,10 +22,10 @@ public class FilterImage {
     
   public static void main(String[] args) throws Exception
   {
-    new FilterImage("image.jpg");
+    new FilterImage();
   }
 
-  public FilterImage(final String filename) throws Exception
+  public FilterImage() throws Exception
   {
     SwingUtilities.invokeLater(new Runnable()
     {
@@ -35,7 +35,7 @@ public class FilterImage {
         editorFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         imageFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         
-        imageFrameLayout(filename);
+        imageFrameLayout(openFile());
         editorFrameLayout();
         
         editorFrame.pack();
@@ -48,8 +48,22 @@ public class FilterImage {
       }
     });
   }
+ 
   
-
+  public File openFile(){
+		final JFileChooser fc = new JFileChooser();
+		fc.setAcceptAllFileFilterUsed(false);
+		
+		int r = fc.showOpenDialog(editorFrame.getRootPane());
+		if(r == JFileChooser.APPROVE_OPTION){
+			File f = fc.getSelectedFile();
+			return f;
+		}else{
+			System.err.println("FILE OPEN CALCELLED");
+		return null;
+		}
+  }
+  
   /**
    * editorFrameLayout	-	Creates a layout for the editor frame
    */
@@ -85,11 +99,11 @@ public class FilterImage {
    * imageFrameLayout 	-	creates a layout for the frame with the images
    * @param filename	-	the image filename
    */
-  private void imageFrameLayout(String filename) {
+  private void imageFrameLayout(File file) {
 	  
 		
       try {
-        image = ImageIO.read(new File(filename));
+        image = ImageIO.read(file);
         changed_image = convertToGrayScale(image); 
       } catch (Exception e) {
         e.printStackTrace();
