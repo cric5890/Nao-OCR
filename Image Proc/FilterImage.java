@@ -3,6 +3,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.*;
 import java.io.*;
+import java.util.ArrayList;
 
 import javax.imageio.*;
 import javax.swing.*;
@@ -88,8 +89,14 @@ public class FilterImage {
 	  resize_inner_panel.add(new JLabel("Resize value:") );
 	  resize_inner_panel.add( resize_text_field );
 	  
+	  JButton find_plaque_btn = new JButton("Find Plaque");
+	  find_plaque_btn.addActionListener(new FindPlaqueListener());
+	  
 	  resize_outer_panel.add(resize_inner_panel, BorderLayout.NORTH);
-	  resize_outer_panel.add(resize_button, BorderLayout.SOUTH);
+	  resize_outer_panel.add(resize_button, BorderLayout.CENTER);
+	  resize_outer_panel.add(find_plaque_btn, BorderLayout.SOUTH);
+	  
+	  
 	  
 	  editorFrame.getContentPane().add(matrix_size_panel, BorderLayout.NORTH);
 	  editorFrame.getContentPane().add(matrix_panel, BorderLayout.CENTER);
@@ -427,6 +434,154 @@ public class FilterImage {
 			Color c = new Color(temp,temp,temp);
 
 			return c.getRGB();
+		}
+		
+	}
+	
+	public class FindPlaqueListener implements ActionListener {
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			int[] old_rgb = image.getRGB(0,0, image.getWidth(), image.getHeight(), null, 0, image.getWidth());
+			
+			ArrayList<LineLocation> ll_vertical = new ArrayList<>();
+			ArrayList<LineLocation> ll_horizontal = new ArrayList<>();
+			
+			//Vertical count
+			for ( int x = 0; x < image.getWidth(); x++ ) {
+				int length_counter = 0;
+				int start_y = 0;
+				int old_pixel = 0;
+				for ( int y = 0; y < image.getHeight(); y++ ) {
+					int current_pixel = new Color( old_rgb[ y*image.getWidth() + x ] ).getRed();
+					if ( current_pixel == old_pixel && current_pixel == 0 ) {
+						length_counter++;
+					} else if ( current_pixel != old_pixel && length_counter > 150 ) {
+						ll_vertical.add(new LineLocation(x, start_y, length_counter));
+						start_y = y;
+						length_counter = 0;
+						old_pixel = current_pixel;
+					} else {
+						start_y = y;
+						old_pixel = current_pixel;
+						length_counter = 0;
+					}
+				}
+			}
+			
+			for ( int i = 0; i < ll_vertical.size(); i++ ) {
+				System.out.println("Starting at " + ll_vertical.get(i).x + "," + ll_vertical.get(i).y + " with a vertical length of " + ll_vertical.get(i).length );
+			}
+			
+			System.out.println("Number of vertical lines: " + ll_vertical.size());
+			
+			//Horizontal count
+			for ( int y = 0; y < image.getHeight(); y++ ) {
+				int length_counter = 0;
+				int start_x = 0;
+				int old_pixel = 0;
+				for ( int x = 0; x < image.getWidth(); x++ ) {
+					int current_pixel = new Color( old_rgb[ y*image.getWidth() + x ] ).getRed();
+					if ( current_pixel == old_pixel && current_pixel == 0 ) {
+						length_counter++;
+					} else if ( current_pixel != old_pixel && length_counter > 150 ) {
+						ll_horizontal.add(new LineLocation(start_x, y, length_counter));
+						start_x = x;
+						length_counter = 0;
+						old_pixel = current_pixel;
+					} else {
+						start_x = x;
+						old_pixel = current_pixel;
+						length_counter = 0;
+					}
+				}
+			}
+			
+			for ( int i = 0; i < ll_horizontal.size(); i++ ) {
+				System.out.println("Starting at " + ll_horizontal.get(i).x + "," + ll_horizontal.get(i).y + " with a horizontal length of " + ll_horizontal.get(i).length );
+			}
+			
+			System.out.println("Number of horizontal lines: " + ll_horizontal.size());
+			
+			int intersect_counter = 0;
+			int min_x = 1280;
+			int min_y = 960;
+			int max_length_x = 0;
+			int max_length_y = 0;
+			for ( int i = 0; i < ll_vertical.size(); i++ ) {
+				for ( int j = 0; j < ll_horizontal.size(); j++ ) {
+					if ( Math.abs( ll_vertical.get(i).x - ll_horizontal.get(j).x ) < 10 && Math.abs( ll_vertical.get(i).y - ll_horizontal.get(j).y ) < 10 ) {
+						//System.out.println("Intersecting point: " + ll_vertical.get(i).x + ", " + ll_vertical.get(i).y );
+						intersect_counter++;
+						//min x
+						if ( ll_vertical.get(i).x < ll_horizontal.get(j).x && min_x > ll_vertical.get(i).x ) {
+							min_x = ll_horizontal.get(i).x;
+							if ( ll_horizontal.get(i).length > max_length_x ) {
+								max_length_x = ll_horizontal.get(i).length;
+							} else if ( ll_vertical.get(j).length > max_length_x ) {
+								max_length_x = ll_horizontal.get(j).length;
+							} 
+						} else if ( min_x > ll_horizontal.get(j).x ) {
+							min_x = ll_horizontal.get(j).x;
+							if ( ll_horizontal.get(i).length > max_length_x ) {
+								max_length_x = ll_horizontal.get(i).length;
+							} else if ( ll_vertical.get(j).length > max_length_x ) {
+								max_length_x = ll_horizontal.get(j).length;
+							} 
+						}
+						//min y
+						if ( ll_vertical.get(i).y < ll_vertical.get(j).y && min_y > ll_vertical.get(i).y ) {
+							min_y = ll_vertical.get(i).y;
+							if ( ll_vertical.get(i).length > max_length_y ) {
+								max_length_y = ll_vertical.get(i).length;
+							} else if ( ll_vertical.get(j).length > max_length_y ) {
+								max_length_y = ll_vertical.get(j).length;
+							} 
+						} else if ( min_y > ll_vertical.get(j).y ) {
+							min_y = ll_horizontal.get(j).y;
+							if ( ll_vertical.get(i).length > max_length_y ) {
+								max_length_y = ll_vertical.get(i).length;
+							} else if ( ll_vertical.get(j).length > max_length_y ) {
+								max_length_y = ll_vertical.get(j).length;
+							} 
+						}
+						
+					}
+				}
+			}
+			System.out.println("Number of intersecting points: " + intersect_counter);
+			System.out.println("Min pos: " + min_x + "," + min_y + " max length: " + max_length_x + "," + max_length_y );
+			
+			//create new image
+			int plaque_rgb[] = new int [max_length_x*max_length_y];
+			int start_x = 0;
+			int start_y = 0;
+			for ( int x = 0; x < max_length_x; x++ ) {
+				start_x = x+min_x;
+				for ( int y = 0; y < max_length_y; y++ ) {
+					start_y = y + min_y;
+					plaque_rgb[y*max_length_x + x] = new Color( image.getRGB(start_x, start_y) ).getRGB();
+				}
+			}
+			BufferedImage plaque_img = new BufferedImage(max_length_x, max_length_y, BufferedImage.TYPE_INT_RGB);
+			plaque_img.setRGB(0, 0, max_length_x, max_length_y, plaque_rgb, 0, max_length_x );
+			
+			JFrame plaque_frame = new JFrame("Plaque Frame");
+			plaque_frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+			
+			
+			ImageIcon imageIcon = new ImageIcon(plaque_img);
+		      JLabel plaque_label = new JLabel();
+		      plaque_label.setIcon(imageIcon);
+		      
+		      JPanel plaque_panel = new JPanel( new BorderLayout() );
+		      plaque_panel.add(plaque_label, BorderLayout.NORTH);
+		      
+		    plaque_frame.add(plaque_panel);
+		    
+		    plaque_frame.pack();
+			plaque_frame.setLocationRelativeTo(null);
+			plaque_frame.setVisible(true);
 		}
 		
 	}
