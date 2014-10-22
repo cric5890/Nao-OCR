@@ -48,8 +48,19 @@ public class FilterImage {
 		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
 		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
 	};
-    
-    
+    /*
+	private int filter[] = {
+		1,1,1,1,1,1,1,1,1,
+		1,1,1,1,1,1,1,1,1,
+		1,1,1,1,1,1,1,1,1,
+		1,1,1,1,1,1,1,1,1,
+		1,1,1,1,-80,1,1,1,1,
+		1,1,1,1,1,1,1,1,1,
+		1,1,1,1,1,1,1,1,1,
+		1,1,1,1,1,1,1,1,1,
+		1,1,1,1,1,1,1,1,1,
+	};
+    */
   public static void main(String[] args) throws Exception
   {
     new FilterImage();
@@ -148,13 +159,13 @@ public class FilterImage {
       ImageIcon imageIcon = new ImageIcon(image);
       JLabel jLabel = new JLabel();
       jLabel.setIcon(imageIcon);
-	  ImageIcon changed_icon = new ImageIcon(changed_image);
+	  /*ImageIcon changed_icon = new ImageIcon(changed_image);
 	  JLabel j_label = new JLabel();
-      j_label.setIcon(changed_icon);
+      j_label.setIcon(changed_icon);*/
       
       image_panel = new JPanel( new BorderLayout() );
       image_panel.add(jLabel, BorderLayout.NORTH);
-      image_panel.add(j_label, BorderLayout.SOUTH);     
+      //image_panel.add(j_label, BorderLayout.SOUTH);     
       
       imageFrame.add(image_panel);
   }
@@ -275,17 +286,17 @@ public class FilterImage {
 	 * redrawImageFrame - when an event happens to change the new image
 	 */
 	public void redrawImageFrame() {
-		ImageIcon imageIcon = new ImageIcon(image);
+		ImageIcon imageIcon = new ImageIcon(changed_image);
 	    JLabel jLabel = new JLabel();
 		jLabel.setIcon(imageIcon);
-		ImageIcon changed_icon = new ImageIcon(changed_image);
+		/*ImageIcon changed_icon = new ImageIcon(changed_image);
 		JLabel j_label = new JLabel();
-	    j_label.setIcon(changed_icon);
+	    j_label.setIcon(changed_icon);*/
 	    
 	    image_panel.removeAll();
 	    
 	    image_panel.add(jLabel, BorderLayout.NORTH);
-	    image_panel.add(j_label, BorderLayout.SOUTH);   
+	    //image_panel.add(j_label, BorderLayout.SOUTH);   
 		
 		imageFrame.pack();
 		imageFrame.revalidate();
