@@ -19,6 +19,35 @@ public class FilterImage {
     JPanel matrix_panel = new JPanel();
     JTextField resize_text_field = null;
     JPanel image_panel = new JPanel();
+	
+	private int filter[] = 
+	{
+		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+		1,1,1,1,1,1,1,1,1,1,1,1,-624,1,1,1,1,1,1,1,1,1,1,1,1,
+		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	};
     
     
   public static void main(String[] args) throws Exception
@@ -314,6 +343,7 @@ public class FilterImage {
 		@Override
 		public void actionPerformed(ActionEvent ae) {
 			try {
+				/*
 				JPanel temp_panel = (JPanel)matrix_panel.getComponent(0);	//list of text fields
 				
 				int count = temp_panel.getComponentCount();
@@ -327,7 +357,7 @@ public class FilterImage {
 					}
 				}
 				
-				
+				*/
 			    
 				changed_image = filterImage(image, filter);
 				redrawImageFrame();
@@ -442,7 +472,7 @@ public class FilterImage {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			int[] old_rgb = image.getRGB(0,0, image.getWidth(), image.getHeight(), null, 0, image.getWidth());
+			int[] old_rgb = changed_image.getRGB(0,0, changed_image.getWidth(), changed_image.getHeight(), null, 0, changed_image.getWidth());
 			
 			ArrayList<LineLocation> ll_vertical = new ArrayList<>();
 			ArrayList<LineLocation> ll_horizontal = new ArrayList<>();
@@ -560,7 +590,7 @@ public class FilterImage {
 				start_x = x+min_x;
 				for ( int y = 0; y < max_length_y; y++ ) {
 					start_y = y + min_y;
-					plaque_rgb[y*max_length_x + x] = new Color( image.getRGB(start_x, start_y) ).getRGB();
+					plaque_rgb[y*max_length_x + x] = new Color( changed_image.getRGB(start_x, start_y) ).getRGB();
 				}
 			}
 			BufferedImage plaque_img = new BufferedImage(max_length_x, max_length_y, BufferedImage.TYPE_INT_RGB);
