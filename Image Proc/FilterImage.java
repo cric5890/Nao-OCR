@@ -132,9 +132,17 @@ public class FilterImage {
 	  JButton find_plaque_btn = new JButton("Find Plaque");
 	  find_plaque_btn.addActionListener(new FindPlaqueListener());
 	  
+	  JButton vert_hist_btn = new JButton("Vert Histogram");
+	  vert_hist_btn.addActionListener(new VertHistListener());
+	  
+	  JButton horz_hist_btn = new JButton("Horz Histogram");
+	  horz_hist_btn.addActionListener(new HorzHistListener());
+	  
 	  resize_outer_panel.add(resize_inner_panel, BorderLayout.NORTH);
 	  resize_outer_panel.add(resize_button, BorderLayout.CENTER);
-	  resize_outer_panel.add(find_plaque_btn, BorderLayout.SOUTH);
+	  //resize_outer_panel.add(find_plaque_btn, BorderLayout.SOUTH);
+	  resize_outer_panel.add(vert_hist_btn, BorderLayout.SOUTH);
+	  resize_outer_panel.add(horz_hist_btn, BorderLayout.EAST);
 	  
 	  
 	  
@@ -302,6 +310,64 @@ public class FilterImage {
 		imageFrame.revalidate();
 		imageFrame.repaint();
 	}
+	
+	public void histogram(String dir){		
+		int width,height,count,rgb,grey;
+		
+		width = changed_image.getWidth();
+		height = changed_image.getHeight();
+		
+		int[][] histogram = new int[width][height];
+		
+		if(dir.equals("vert")){
+			for(int y=0;y<height-1;y++){
+				count=0;
+				for(int x=0;x<width-1;x++){
+					if(Math.abs(changed_image.getRGB(x, y)>>16) < 10){
+						count ++;
+					}
+				}
+				
+				for(int x=0;x<width-1;x++){
+					if(x<=count){
+						histogram[x][y] = 0;
+					}else{
+						histogram[x][y] = 255;
+					}
+				}
+			}
+		}else if(dir.equals("horz")){
+			for(int x=0;x<width-1;x++){
+				count=0;
+				for(int y=0;y<height-1;y++){
+					if(Math.abs(changed_image.getRGB(x, y)>>16) < 10){
+						count ++;
+					}
+				}
+				
+				for(int y=0;y<height-1;y++){
+					if(y<=count){
+						histogram[x][y] = 0;
+					}else{
+						histogram[x][y] = 255;
+					}
+				}
+			}
+		}		
+		
+		System.out.println("Printing Histogram");
+		for(int x=0;x<width-1;x++){
+			for(int y=0;y<height-1;y++){
+				rgb = (histogram[x][y] << 16) + (histogram[x][y] << 8) + histogram[x][y];
+				changed_image.setRGB(x, y, rgb);
+			}
+		}
+		
+		redrawImageFrame();
+		
+		//int rgb = (gray << 16) + (gray << 8) + gray;
+	}
+	
 	
 //=================================================================================================
 //	Events
@@ -626,5 +692,20 @@ public class FilterImage {
 		}
 		
 	}
-  
+	
+	public class HorzHistListener implements ActionListener {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			
+			
+			histogram("horz");
+		}
+	}
+	
+	public class VertHistListener implements ActionListener {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			histogram("vert");
+		}
+	}
 }
