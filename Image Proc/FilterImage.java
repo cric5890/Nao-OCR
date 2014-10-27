@@ -323,7 +323,7 @@ public class FilterImage {
 			for(int y=0;y<height-1;y++){
 				count=0;
 				for(int x=0;x<width-1;x++){
-					if(Math.abs(changed_image.getRGB(x, y)>>16) < 10){
+					if(Math.abs(changed_image.getRGB(x, y)>>16) > 250){
 						count ++;
 					}
 				}
@@ -340,7 +340,7 @@ public class FilterImage {
 			for(int x=0;x<width-1;x++){
 				count=0;
 				for(int y=0;y<height-1;y++){
-					if(Math.abs(changed_image.getRGB(x, y)>>16) < 10){
+					if(Math.abs(changed_image.getRGB(x, y)>>16) > 250){
 						count ++;
 					}
 				}
