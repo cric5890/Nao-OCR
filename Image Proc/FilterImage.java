@@ -20,7 +20,7 @@ public class FilterImage {
     JTextField resize_text_field = null;
     JPanel image_panel = new JPanel();
 	
-	private int filter[] = 
+	/*private int filter[] = 
 	{
 		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
 		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
@@ -47,7 +47,7 @@ public class FilterImage {
 		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
 		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
 		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-	};
+	};*/
     /*
 	private int filter[] = {
 		1,1,1,1,1,1,1,1,1,
@@ -420,7 +420,7 @@ public class FilterImage {
 		@Override
 		public void actionPerformed(ActionEvent ae) {
 			try {
-				/*
+				
 				JPanel temp_panel = (JPanel)matrix_panel.getComponent(0);	//list of text fields
 				
 				int count = temp_panel.getComponentCount();
@@ -434,7 +434,7 @@ public class FilterImage {
 					}
 				}
 				
-				*/
+				
 			    
 				changed_image = filterImage(image, filter);
 				redrawImageFrame();
