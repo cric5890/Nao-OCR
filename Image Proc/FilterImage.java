@@ -185,6 +185,7 @@ public class FilterImage {
    * @return	The new image with a filter applied to it
    */
   private BufferedImage filterImage( BufferedImage first, int[] filter ) {
+	long start = System.nanoTime();
 	  BufferedImage old = deepCopy(first);
 	  int[] old_rgb = old.getRGB(0,0, old.getWidth(), old.getHeight(), null, 0, old.getWidth());
 	  int[] new_rgb = old.getRGB(0,0, old.getWidth(), old.getHeight(), null, 0, old.getWidth());
@@ -194,6 +195,8 @@ public class FilterImage {
 	  }
 	  
 	  old.setRGB(0,0,old.getWidth(), old.getHeight(),new_rgb, 0, old.getWidth());
+	  long end = (System.nanoTime() - start)/1000000000;
+	  System.out.println("Took : " + end + "s to filter");
 	  return old;
   }
   /**
