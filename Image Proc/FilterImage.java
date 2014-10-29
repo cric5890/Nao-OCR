@@ -132,17 +132,17 @@ public class FilterImage {
 	  JButton find_plaque_btn = new JButton("Find Plaque");
 	  find_plaque_btn.addActionListener(new FindPlaqueListener());
 	  
-	  JButton vert_hist_btn = new JButton("Vert Histogram");
-	  vert_hist_btn.addActionListener(new VertHistListener());
+	  JButton both_hist_btn = new JButton("Histogram");
+	  both_hist_btn.addActionListener(new BothHistListener());
 	  
-	  JButton horz_hist_btn = new JButton("Horz Histogram");
-	  horz_hist_btn.addActionListener(new HorzHistListener());
+	  //JButton horz_hist_btn = new JButton("Horz Histogram");
+	  //horz_hist_btn.addActionListener(new HorzHistListener());
 	  
 	  resize_outer_panel.add(resize_inner_panel, BorderLayout.NORTH);
 	  resize_outer_panel.add(resize_button, BorderLayout.CENTER);
 	  //resize_outer_panel.add(find_plaque_btn, BorderLayout.SOUTH);
-	  resize_outer_panel.add(vert_hist_btn, BorderLayout.SOUTH);
-	  resize_outer_panel.add(horz_hist_btn, BorderLayout.EAST);
+	  resize_outer_panel.add(both_hist_btn, BorderLayout.SOUTH);
+	  //resize_outer_panel.add(horz_hist_btn, BorderLayout.EAST);
 	  
 	  
 	  
@@ -314,6 +314,143 @@ public class FilterImage {
 		imageFrame.revalidate();
 		imageFrame.repaint();
 	}
+	/**
+		Counting rows from top to bottom
+	*/
+	public float[] histVert(int width, int height) {
+		//System.out.println("==========Vertical Lines==========");
+		int count = 0;
+		float array[] = new float[height];
+		for(int y=0;y<height-1;y++){
+			count=0;
+			for(int x=0;x<width-1;x++){
+				Color c = new Color(changed_image.getRGB(x, y));
+				if ( 	c.getRed() >= 50 && c.getRed() <= 85 &&
+						c.getGreen() >= 80 && c.getGreen() <= 100 &&
+						c.getBlue() >= 90 && c.getBlue() <= 110 ) {	
+						
+							count++;
+						
+				}
+			}
+			//count used here
+			float percent = ( (float)count/(float)width ) * 100;
+			//System.out.println(percent);
+			array[y] = percent;
+		}
+		return array;
+	}
+	/**
+		Counting columns from left to right
+	*/
+	public float[] histHoriz(int width, int height) {
+		//System.out.println("==========Horizontal Lines==========");
+		float array[] = new float[width];
+		int count = 0;
+		for(int x=0;x<width-1;x++){
+			count=0;
+			for(int y=0;y<height-1;y++){
+				Color c = new Color(changed_image.getRGB(x, y));
+				if ( 	c.getRed() >= 50 && c.getRed() <= 85 &&
+						c.getGreen() >= 80 && c.getGreen() <= 100 &&
+						c.getBlue() >= 90 && c.getBlue() <= 110 ) {	
+						
+							count++;
+						
+				}
+			}
+			//count used here
+			float percent = ( (float)count/(float)height ) * 100;
+			//System.out.println(percent);
+			array[x] = percent;
+		}
+		return array;
+	}
+	
+	/**
+		Finds the plaque from horizontal and vertical histogram percent data
+
+		@param	horz_percent	The percentage of black pixels in each column
+		@param	vert_percent	The percentage of black pixels in each row
+	*/
+	public void findPlaque(float horz_percent[], float vert_percent[], int width, int height) {
+		ArrayList<int[]> horz_lines = new ArrayList<>();		//the inner itn arrays are len 2, {pos, length}
+		ArrayList<int[]> vert_lines = new ArrayList<>();
+		//find for horizontal
+		int start = 0;
+		int len = 0;
+		for ( int i = 0; i < width; i++ ) {
+			if ( horz_percent[i] > 0.0 ) {
+				len++;
+			} else if ( horz_percent[i] == 0.0 && len > 100 ) {
+				int container[] = new int[2];
+				container[0] = start;
+				container[1] = len;
+				horz_lines.add(container);
+				start = i;
+				len = 1;
+			} else {
+				start = i;
+				len = 1;
+			}
+		}
+		//find for vertical
+		start = 0;
+		len = 0;
+		for ( int i = 0; i < height; i++ ) {
+			if ( vert_percent[i] > 0.0 ) {
+				len++;
+			} else if ( vert_percent[i] == 0.0 && len > 100 ) {
+				int container[] = new int[2];
+				container[0] = start;
+				container[1] = len;
+				vert_lines.add(container);
+				start = i;
+				len = 1;
+			} else {
+				start = i;
+				len = 1;
+			}
+		}
+		
+		//TESTING
+		
+		System.out.println("For Horizontal Line(s)");
+		for ( int i = 0; i < horz_lines.size(); i++ ) {
+			int container[] = horz_lines.get(i);
+			System.out.println("pos= " + container[0] + " length= " + container[1] );
+		}
+		System.out.println("For Vertical Line(s)");
+		for ( int i = 0; i < vert_lines.size(); i++ ) {
+			int container[] = vert_lines.get(i);
+			System.out.println("pos= " + container[0] + " length= " + container[1] );
+		}
+		
+		if ( horz_lines.size() > 0 && vert_lines.size() > 0 ) {
+			int container[] = horz_lines.get(0);
+			int start_x = container[0];
+			int plaque_width = container[1];
+			
+			container = vert_lines.get(0);
+			int start_y = container[0];
+			int plaque_height = container[1];
+			
+			int new_rgb[] = new int[ (plaque_width) * (plaque_height)];
+			int new_rgb_counter = 0;
+			for ( int y = start_y-20; y < plaque_height+start_y-20; y++ ) {
+				for ( int x = start_x; x < plaque_width+start_x; x++ ) {
+					new_rgb[new_rgb_counter] = image.getRGB(x,y);
+					new_rgb_counter++;
+				}
+			}
+			changed_image = new BufferedImage(plaque_width, plaque_height, BufferedImage.TYPE_INT_RGB);
+			changed_image.setRGB(0, 0, plaque_width, plaque_height, new_rgb, 0, plaque_width );
+			redrawImageFrame();
+		} else {
+			System.out.println(	"ERROR: Could not find plaque, found " + horz_lines.size() + 
+								" horizontal lines and found " + vert_lines.size() + " vertical lines.");
+		}
+	}
 	
 	public void histogram(String dir){		
 		int width,height,count,rgb,grey;
@@ -327,15 +464,7 @@ public class FilterImage {
 			for(int y=0;y<height-1;y++){
 				count=0;
 				for(int x=0;x<width-1;x++){
-					//where to check if red,green,blue is the correct color
-					//r=78
-					//g=83
-					//b=105
-					/*if(Math.abs(changed_image.getRGB(x, y)>>16) > 250){
-						count ++;
-					}*/
 					Color c = new Color(changed_image.getRGB(x, y));
-					//System.out.println("r= " + c.getRed() + " g= " + c.getGreen() + "b= " + c.getBlue() );
 					if ( 	c.getRed() >= 75 && c.getRed() <= 85 &&
 							c.getGreen() >= 80 && c.getGreen() <= 100 &&
 							c.getBlue() >= 90 && c.getBlue() <= 110 ) {	
@@ -378,6 +507,11 @@ public class FilterImage {
 					}
 				}
 			}
+		}	else if ( dir.equals("both") ) {
+			float horz_percent[] = histHoriz(width, height);
+			float vert_percent[] = histVert(width, height);
+			findPlaque(horz_percent, vert_percent, width, height);
+			return;
 		}		
 		
 		System.out.println("Printing Histogram");
@@ -731,6 +865,13 @@ public class FilterImage {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			histogram("vert");
+		}
+	}
+	
+	public class BothHistListener implements ActionListener {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			histogram("both");
 		}
 	}
 }
