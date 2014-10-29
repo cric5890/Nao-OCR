@@ -159,7 +159,8 @@ public class FilterImage {
 		
       try {
         image = ImageIO.read(file);
-        changed_image = convertToGrayScale(image); 
+		changed_image = image;
+        //changed_image = convertToGrayScale(image); 
       } catch (Exception e) {
         e.printStackTrace();
         System.exit(1);
@@ -326,8 +327,21 @@ public class FilterImage {
 			for(int y=0;y<height-1;y++){
 				count=0;
 				for(int x=0;x<width-1;x++){
-					if(Math.abs(changed_image.getRGB(x, y)>>16) > 250){
+					//where to check if red,green,blue is the correct color
+					//r=78
+					//g=83
+					//b=105
+					/*if(Math.abs(changed_image.getRGB(x, y)>>16) > 250){
 						count ++;
+					}*/
+					Color c = new Color(changed_image.getRGB(x, y));
+					//System.out.println("r= " + c.getRed() + " g= " + c.getGreen() + "b= " + c.getBlue() );
+					if ( 	c.getRed() >= 75 && c.getRed() <= 85 &&
+							c.getGreen() >= 80 && c.getGreen() <= 100 &&
+							c.getBlue() >= 90 && c.getBlue() <= 110 ) {	
+							
+								count++;
+							
 					}
 				}
 				
@@ -343,8 +357,16 @@ public class FilterImage {
 			for(int x=0;x<width-1;x++){
 				count=0;
 				for(int y=0;y<height-1;y++){
-					if(Math.abs(changed_image.getRGB(x, y)>>16) > 250){
+					/*if(Math.abs(changed_image.getRGB(x, y)>>16) > 250){
 						count ++;
+					}*/
+					Color c = new Color(changed_image.getRGB(x, y));
+					if ( 	c.getRed() >= 75 && c.getRed() <= 85 &&
+							c.getGreen() >= 80 && c.getGreen() <= 100 &&
+							c.getBlue() >= 90 && c.getBlue() <= 110 ) {	
+							
+								count++;
+							
 					}
 				}
 				
