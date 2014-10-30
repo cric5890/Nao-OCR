@@ -321,7 +321,7 @@ public class FilterImage {
 		Counting rows from top to bottom
 	*/
 	public float[] histVert(int width, int height) {
-		//System.out.println("==========Vertical Lines==========");
+		System.out.println("==========Vertical Lines==========");
 		int count = 0;
 		float array[] = new float[height];
 		for(int y=0;y<height-1;y++){
@@ -335,13 +335,13 @@ public class FilterImage {
 								count++;
 							
 					}*/
-					if ( c.getRed() > 200 ) {
+					if ( c.getRed() > 250 ) {
 						count++;
 					}
 			}
 			//count used here
 			float percent = ( (float)count/(float)width ) * 100;
-			//System.out.println(percent);
+			System.out.println(percent);
 			array[y] = percent;
 		}
 		return array;
@@ -350,7 +350,7 @@ public class FilterImage {
 		Counting columns from left to right
 	*/
 	public float[] histHoriz(int width, int height) {
-		//System.out.println("==========Horizontal Lines==========");
+		System.out.println("==========Horizontal Lines==========");
 		float array[] = new float[width];
 		int count = 0;
 		for(int x=0;x<width-1;x++){
@@ -364,13 +364,13 @@ public class FilterImage {
 								count++;
 							
 					}*/
-					if ( c.getRed() > 200 ) {
+					if ( c.getRed() > 250 ) {
 						count++;
 					}
 			}
 			//count used here
 			float percent = ( (float)count/(float)height ) * 100;
-			//System.out.println(percent);
+			System.out.println(percent);
 			array[x] = percent;
 		}
 		return array;
@@ -388,10 +388,10 @@ public class FilterImage {
 		//find for horizontal
 		int start = 0;
 		int len = 0;
-		for ( int i = 0; i < width; i++ ) {
-			if ( horz_percent[i] > 0.0 ) {
+		for ( int i = 0; i < width-1; i++ ) {
+			if ( horz_percent[i] > 0.0 || horz_percent[i+1] > 0 ) {
 				len++;
-			} else if ( horz_percent[i] == 0.0 && len > 10 ) {
+			} else if ( horz_percent[i] == 0.0 && len > 100 ) {
 				int container[] = new int[2];
 				container[0] = start;
 				container[1] = len;
@@ -406,10 +406,10 @@ public class FilterImage {
 		//find for vertical
 		start = 0;
 		len = 0;
-		for ( int i = 0; i < height; i++ ) {
-			if ( vert_percent[i] > 0.0 ) {
+		for ( int i = 0; i < height-1; i++ ) {
+			if ( vert_percent[i] > 0.0 ||  vert_percent[i+1] > 0.0) {
 				len++;
-			} else if ( vert_percent[i] == 0.0 && len > 10 ) {
+			} else if ( vert_percent[i] == 0.0 && len > 100 ) {
 				int container[] = new int[2];
 				container[0] = start;
 				container[1] = len;
@@ -435,6 +435,16 @@ public class FilterImage {
 			System.out.println("pos= " + container[0] + " length= " + container[1] );
 		}
 		
+		if ( horz_lines.size() > 1 ) {
+			System.out.println("running horz again");
+			initFindPlaque(width, height,1,0);
+			return;
+		} else if ( vert_lines.size() > 1 ) {
+			System.out.println("running vert again");
+			initFindPlaque(width, height,0,1);
+			return;
+		}
+		
 		if ( horz_lines.size() > 0 && vert_lines.size() > 0 ) {
 			int container[] = horz_lines.get(0);
 			int start_x = container[0];
@@ -446,7 +456,7 @@ public class FilterImage {
 			
 			int new_rgb[] = new int[ (plaque_width) * (plaque_height)];
 			int new_rgb_counter = 0;
-			for ( int y = start_y-20; y < plaque_height+start_y-20; y++ ) {
+			for ( int y = start_y; y < plaque_height+start_y; y++ ) {
 				for ( int x = start_x; x < plaque_width+start_x; x++ ) {
 					new_rgb[new_rgb_counter] = image.getRGB(x,y);
 					new_rgb_counter++;
@@ -523,13 +533,11 @@ public class FilterImage {
 				}
 			}
 		}	else if ( dir.equals("both") ) {
-			float horz_percent[] = histHoriz(width, height);
-			float vert_percent[] = histVert(width, height);
-			findPlaque(horz_percent, vert_percent, width, height);
+			initFindPlaque(width, height,0,0);
 			return;
 		}		
 		
-		System.out.println("Printing Histogram");
+		//System.out.println("Printing Histogram");
 		for(int x=0;x<width-1;x++){
 			for(int y=0;y<height-1;y++){
 				rgb = (histogram[x][y] << 16) + (histogram[x][y] << 8) + histogram[x][y];
@@ -540,6 +548,29 @@ public class FilterImage {
 		redrawImageFrame();
 		
 		//int rgb = (gray << 16) + (gray << 8) + gray;
+	}
+	
+	public void initFindPlaque(int width, int height, int incr_top, int incr_left ) {
+		int top_filter[] = {	-1,-2-incr_top,-1,
+								 0, 0, 0,
+								 1, 2+incr_top, 1 };
+		int left_filter[] = {	-1, 0, 1,
+								-2-incr_left, 0, 2+incr_left,
+								-1, 0, 1 };
+		int right_filter[] = {	1, 0, -1,
+								2, 0, -2,
+								1, 0, -1 };
+		int high_pass_filter[] = {	-1, -1, -1,
+									-1, 8, -1,
+									-1, -1, -1 };
+		//horizontal
+		changed_image = filterImage(image, top_filter);
+		float horz_percent[] = histHoriz(width, height);
+		//vertical
+		changed_image = filterImage(image, left_filter);
+		float vert_percent[] = histVert(width, height);
+		findPlaque(horz_percent, vert_percent, width, height);
+		return;
 	}
 	
 	
