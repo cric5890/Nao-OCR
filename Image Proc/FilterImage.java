@@ -132,18 +132,21 @@ public class FilterImage {
 	  JButton find_plaque_btn = new JButton("Find Plaque");
 	  find_plaque_btn.addActionListener(new FindPlaqueListener());
 	  
-	  JButton both_hist_btn = new JButton("Histogram");
+	  JButton both_hist_btn = new JButton("Find Plaque");
 	  both_hist_btn.addActionListener(new BothHistListener());
 	  
-	  //JButton horz_hist_btn = new JButton("Horz Histogram");
-	  //horz_hist_btn.addActionListener(new HorzHistListener());
+	  JButton horz_hist_btn = new JButton("Horz Histogram");
+	  horz_hist_btn.addActionListener(new HorzHistListener());
+	  
+	  JButton vert_hist_btn = new JButton("Vert Histogram");
+	  vert_hist_btn.addActionListener(new VertHistListener());
 	  
 	  resize_outer_panel.add(resize_inner_panel, BorderLayout.NORTH);
-	  resize_outer_panel.add(resize_button, BorderLayout.CENTER);
+	  //resize_outer_panel.add(resize_button, BorderLayout.CENTER);
 	  //resize_outer_panel.add(find_plaque_btn, BorderLayout.SOUTH);
 	  resize_outer_panel.add(both_hist_btn, BorderLayout.SOUTH);
-	  //resize_outer_panel.add(horz_hist_btn, BorderLayout.EAST);
-	  
+	  resize_outer_panel.add(horz_hist_btn, BorderLayout.EAST);
+	  resize_outer_panel.add(vert_hist_btn, BorderLayout.CENTER);
 	  
 	  
 	  editorFrame.getContentPane().add(matrix_size_panel, BorderLayout.NORTH);
