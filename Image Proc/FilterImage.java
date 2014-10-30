@@ -199,7 +199,7 @@ public class FilterImage {
 	  }
 	  
 	  old.setRGB(0,0,old.getWidth(), old.getHeight(),new_rgb, 0, old.getWidth());
-	  long end = (System.nanoTime() - start)/1000000000;
+	  float end = (System.nanoTime() - start)/1000000000.0f;
 	  System.out.println("Took : " + end + "s to filter");
 	  return old;
   }
@@ -328,13 +328,16 @@ public class FilterImage {
 			count=0;
 			for(int x=0;x<width-1;x++){
 				Color c = new Color(changed_image.getRGB(x, y));
-				if ( 	c.getRed() >= 50 && c.getRed() <= 85 &&
-						c.getGreen() >= 80 && c.getGreen() <= 100 &&
-						c.getBlue() >= 90 && c.getBlue() <= 110 ) {	
-						
-							count++;
-						
-				}
+				/*if ( 	c.getRed() >= 75 && c.getRed() <= 85 &&
+							c.getGreen() >= 80 && c.getGreen() <= 100 &&
+							c.getBlue() >= 90 && c.getBlue() <= 110 ) {	
+							
+								count++;
+							
+					}*/
+					if ( c.getRed() > 200 ) {
+						count++;
+					}
 			}
 			//count used here
 			float percent = ( (float)count/(float)width ) * 100;
@@ -354,13 +357,16 @@ public class FilterImage {
 			count=0;
 			for(int y=0;y<height-1;y++){
 				Color c = new Color(changed_image.getRGB(x, y));
-				if ( 	c.getRed() >= 50 && c.getRed() <= 85 &&
-						c.getGreen() >= 80 && c.getGreen() <= 100 &&
-						c.getBlue() >= 90 && c.getBlue() <= 110 ) {	
-						
-							count++;
-						
-				}
+				/*if ( 	c.getRed() >= 75 && c.getRed() <= 85 &&
+							c.getGreen() >= 80 && c.getGreen() <= 100 &&
+							c.getBlue() >= 90 && c.getBlue() <= 110 ) {	
+							
+								count++;
+							
+					}*/
+					if ( c.getRed() > 200 ) {
+						count++;
+					}
 			}
 			//count used here
 			float percent = ( (float)count/(float)height ) * 100;
@@ -385,7 +391,7 @@ public class FilterImage {
 		for ( int i = 0; i < width; i++ ) {
 			if ( horz_percent[i] > 0.0 ) {
 				len++;
-			} else if ( horz_percent[i] == 0.0 && len > 100 ) {
+			} else if ( horz_percent[i] == 0.0 && len > 10 ) {
 				int container[] = new int[2];
 				container[0] = start;
 				container[1] = len;
@@ -403,7 +409,7 @@ public class FilterImage {
 		for ( int i = 0; i < height; i++ ) {
 			if ( vert_percent[i] > 0.0 ) {
 				len++;
-			} else if ( vert_percent[i] == 0.0 && len > 100 ) {
+			} else if ( vert_percent[i] == 0.0 && len > 10 ) {
 				int container[] = new int[2];
 				container[0] = start;
 				container[1] = len;
@@ -468,12 +474,15 @@ public class FilterImage {
 				count=0;
 				for(int x=0;x<width-1;x++){
 					Color c = new Color(changed_image.getRGB(x, y));
-					if ( 	c.getRed() >= 75 && c.getRed() <= 85 &&
+					/*if ( 	c.getRed() >= 75 && c.getRed() <= 85 &&
 							c.getGreen() >= 80 && c.getGreen() <= 100 &&
 							c.getBlue() >= 90 && c.getBlue() <= 110 ) {	
 							
 								count++;
 							
+					}*/
+					if ( c.getRed() > 250 ) {
+						count++;
 					}
 				}
 				
@@ -493,12 +502,15 @@ public class FilterImage {
 						count ++;
 					}*/
 					Color c = new Color(changed_image.getRGB(x, y));
-					if ( 	c.getRed() >= 75 && c.getRed() <= 85 &&
+					/*if ( 	c.getRed() >= 75 && c.getRed() <= 85 &&
 							c.getGreen() >= 80 && c.getGreen() <= 100 &&
 							c.getBlue() >= 90 && c.getBlue() <= 110 ) {	
 							
 								count++;
 							
+					}*/
+					if ( c.getRed() > 250 ) {
+						count++;
 					}
 				}
 				
