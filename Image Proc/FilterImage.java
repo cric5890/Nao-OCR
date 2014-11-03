@@ -321,7 +321,7 @@ public class FilterImage {
 		Counting rows from top to bottom
 	*/
 	public float[] histVert(int width, int height) {
-		System.out.println("==========Vertical Lines==========");
+		//System.out.println("==========Vertical Lines==========");
 		int count = 0;
 		float array[] = new float[height];
 		for(int y=0;y<height-1;y++){
@@ -341,16 +341,17 @@ public class FilterImage {
 			}
 			//count used here
 			float percent = ( (float)count/(float)width ) * 100;
-			System.out.println(percent);
+			//System.out.println(percent);
 			array[y] = percent;
 		}
-		return array;
+		
+		return removeModeAndLess(array);
 	}
 	/**
 		Counting columns from left to right
 	*/
 	public float[] histHoriz(int width, int height) {
-		System.out.println("==========Horizontal Lines==========");
+		//System.out.println("==========Horizontal Lines==========");
 		float array[] = new float[width];
 		int count = 0;
 		for(int x=0;x<width-1;x++){
@@ -370,10 +371,67 @@ public class FilterImage {
 			}
 			//count used here
 			float percent = ( (float)count/(float)height ) * 100;
-			System.out.println(percent);
+			//System.out.println(percent);
 			array[x] = percent;
 		}
-		return array;
+		
+		return removeModeAndLess(array);
+	}
+	/**
+		Finds and sets all values to 0 that are equal to or less than the
+		mode of the given array;
+		
+		@param old	float[] - Contains the array of values to check
+		
+		@return A new float[] of removed values
+	*/
+	private float[] removeModeAndLess(float old[]) {
+		ArrayList<Float> values = new ArrayList<>();
+		ArrayList<Integer> counts = new ArrayList<>();
+		values.add(old[0]);
+		counts.add(1);
+		int old_length = old.length;
+		//finds the count of percents
+		for ( int i = 1; i < old_length; i++ ) {
+			float temp_value = old[i];
+			for ( int j = 0; j < values.size(); j++ ) {
+				if ( values.get(j) == temp_value ) {
+					counts.set(j, counts.get(j) + 1 );
+					break;
+				}
+			}
+			if ( values.contains(temp_value) == false ) {
+				values.add(temp_value);
+				counts.add(1);
+			}
+		}
+		
+		//For printing
+		/*
+		for ( int i = 0; i < values.size(); i++ ) {
+			System.out.println(values.get(i) + " occur " + counts.get(i) );
+		}
+		*/
+		
+		//get mode
+		int mode_index = 0;
+		int mode_greatest = counts.get(0);
+		for ( int i = 1; i < values.size(); i++ ) {
+			if ( counts.get(i) > mode_greatest ) {
+				mode_greatest = counts.get(i);
+				mode_index = i;
+			}
+		}
+		
+		//remove all mode and less than
+		float mode = values.get(mode_index);
+		float new_array[] = old;
+		for ( int i = 0; i < old.length; i++ ) {
+			if ( old[i] <= mode ) {
+				new_array[i] = 0.0f;
+			}
+		}
+		return new_array;
 	}
 	
 	/**
@@ -391,7 +449,7 @@ public class FilterImage {
 		for ( int i = 0; i < width-1; i++ ) {
 			if ( horz_percent[i] > 0.0 || horz_percent[i+1] > 0 ) {
 				len++;
-			} else if ( horz_percent[i] == 0.0 && len > 100 ) {
+			} else if ( horz_percent[i] == 0.0 && len > 50 ) {
 				int container[] = new int[2];
 				container[0] = start;
 				container[1] = len;
@@ -409,7 +467,7 @@ public class FilterImage {
 		for ( int i = 0; i < height-1; i++ ) {
 			if ( vert_percent[i] > 0.0 ||  vert_percent[i+1] > 0.0) {
 				len++;
-			} else if ( vert_percent[i] == 0.0 && len > 100 ) {
+			} else if ( vert_percent[i] == 0.0 && len > 50 ) {
 				int container[] = new int[2];
 				container[0] = start;
 				container[1] = len;
@@ -435,11 +493,19 @@ public class FilterImage {
 			System.out.println("pos= " + container[0] + " length= " + container[1] );
 		}
 		
-		if ( horz_lines.size() > 1 ) {
+		if ( horz_lines.size() != 1 ) {
+			if ( top_center_value > 9 ) {
+				System.out.println("Horz looped 10 times, exiting");
+				System.exit(-1);
+			}
 			System.out.println("running horz again");
 			initFindPlaque(width, height,1,0);
 			return;
-		} else if ( vert_lines.size() > 1 ) {
+		} else if ( vert_lines.size() != 1 ) {
+			if ( left_center_value > 9 ) {
+				System.out.println("Vert looped 10 times, exiting");
+				System.exit(-1);
+			}
 			System.out.println("running vert again");
 			initFindPlaque(width, height,0,1);
 			return;
@@ -473,13 +539,16 @@ public class FilterImage {
 	
 	public void histogram(String dir){		
 		int width,height,count,rgb,grey;
-		
+		float array[] = new float[1];
 		width = changed_image.getWidth();
 		height = changed_image.getHeight();
 		
 		int[][] histogram = new int[width][height];
 		
 		if(dir.equals("vert")){
+			System.out.println("==========Vertical==========");
+			array = new float[height];
+			
 			for(int y=0;y<height-1;y++){
 				count=0;
 				for(int x=0;x<width-1;x++){
@@ -495,7 +564,9 @@ public class FilterImage {
 						count++;
 					}
 				}
-				
+				float percent = ( (float)count/(float)width ) * 100;
+				array[y] = percent;
+				//System.out.println(percent);
 				for(int x=0;x<width-1;x++){
 					if(x<=count){
 						histogram[x][y] = 0;
@@ -505,6 +576,9 @@ public class FilterImage {
 				}
 			}
 		}else if(dir.equals("horz")){
+			System.out.println("==========Horizontal==========");
+			array = new float[width];
+			
 			for(int x=0;x<width-1;x++){
 				count=0;
 				for(int y=0;y<height-1;y++){
@@ -524,6 +598,10 @@ public class FilterImage {
 					}
 				}
 				
+				float percent = ( (float)count/(float)height ) * 100;
+				//System.out.println(percent);
+				array[x] = percent;
+				
 				for(int y=0;y<height-1;y++){
 					if(y<=count){
 						histogram[x][y] = 0;
@@ -533,29 +611,44 @@ public class FilterImage {
 				}
 			}
 		}	else if ( dir.equals("both") ) {
-			initFindPlaque(width, height,0,0);
+			initFindPlaque(width, height,1,1);
 			return;
 		}		
 		
+		array = removeModeAndLess(array);
+		for ( int i = 0; i < array.length; i++ ) {
+			System.out.println(array[i]);
+		}
 		//System.out.println("Printing Histogram");
 		for(int x=0;x<width-1;x++){
 			for(int y=0;y<height-1;y++){
-				rgb = (histogram[x][y] << 16) + (histogram[x][y] << 8) + histogram[x][y];
+				rgb = new Color(255,255,255).getRGB();
+				if ( x < array.length && array[x] > 0.0f && dir.equals("horz") ) {
+					rgb = (histogram[x][y] << 16) + (histogram[x][y] << 8) + histogram[x][y];
+				} else if ( y < array.length && array[y] > 0.0f && dir.equals("vert") ) {
+					rgb = (histogram[x][y] << 16) + (histogram[x][y] << 8) + histogram[x][y];
+				}
 				changed_image.setRGB(x, y, rgb);
 			}
 		}
+		
+		
+		
 		
 		redrawImageFrame();
 		
 		//int rgb = (gray << 16) + (gray << 8) + gray;
 	}
-	
+	private int top_center_value = 0;
+	private int left_center_value = 0;
 	public void initFindPlaque(int width, int height, int incr_top, int incr_left ) {
-		int top_filter[] = {	-1,-2-incr_top,-1,
+		top_center_value+=incr_top;
+		left_center_value+=incr_left;
+		int top_filter[] = {	-1,-top_center_value,-1,
 								 0, 0, 0,
-								 1, 2+incr_top, 1 };
+								 1, top_center_value, 1 };
 		int left_filter[] = {	-1, 0, 1,
-								-2-incr_left, 0, 2+incr_left,
+								-left_center_value, 0, left_center_value,
 								-1, 0, 1 };
 		int right_filter[] = {	1, 0, -1,
 								2, 0, -2,
