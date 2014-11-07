@@ -364,7 +364,7 @@ public class PlaqueDB {
 			new Color(88,92,101),
 			new Color(92,97,101),
 			new Color(96,104,117),
-			new Color(213,206,190),
+			//new Color(213,206,190),
 			new Color(129,115,89),
 			new Color(54,66,78),
 			new Color(131,131,131),
