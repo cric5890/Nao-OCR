@@ -583,7 +583,7 @@ public class FilterImage {
 	}
 	
 	public void histogram(String dir){		
-		int width,height,count,rgb,grey;
+		int width,height,count=0,rgb = 0,grey;
 		float array[] = new float[1];
 		width = changed_image.getWidth();
 		height = changed_image.getHeight();
@@ -624,9 +624,9 @@ public class FilterImage {
 			System.out.println("==========Horizontal==========");
 			array = new float[width];
 			
-			for(int x=0;x<width-1;x++){
+			for(int x=0;x<width;x++){
 				count=0;
-				for(int y=0;y<height-1;y++){
+				for(int y=0;y<height;y++){
 					/*if(Math.abs(changed_image.getRGB(x, y)>>16) > 250){
 						count ++;
 					}*/
@@ -647,7 +647,7 @@ public class FilterImage {
 				//System.out.println(percent);
 				array[x] = percent;
 				
-				for(int y=0;y<height-1;y++){
+				for(int y=0;y<height;y++){
 					if(y<=count){
 						histogram[x][y] = 0;
 					}else{
@@ -661,17 +661,20 @@ public class FilterImage {
 		}		
 		
 		array = removeModeAndLess(array);
-		for ( int i = 0; i < array.length; i++ ) {
+		/*for ( int i = 0; i < array.length; i++ ) {
 			System.out.println(array[i]);
-		}
+		}*/
 		//System.out.println("Printing Histogram");
-		for(int x=0;x<width-1;x++){
-			for(int y=0;y<height-1;y++){
+		for(int x=0;x<width;x++){
+			for(int y=0;y<height;y++){
+				//rgb = (histogram[x][y] << 16) + (histogram[x][y] << 8) + histogram[x][y];
 				rgb = new Color(255,255,255).getRGB();
 				if ( x < array.length && array[x] > 0.0f && dir.equals("horz") ) {
-					rgb = (histogram[x][y] << 16) + (histogram[x][y] << 8) + histogram[x][y];
+					//rgb = (histogram[x][y] << 16) + (histogram[x][y] << 8) + histogram[x][y];
+					rgb = new Color(histogram[x][y], histogram[x][y], histogram[x][y] ).getRGB();
 				} else if ( y < array.length && array[y] > 0.0f && dir.equals("vert") ) {
-					rgb = (histogram[x][y] << 16) + (histogram[x][y] << 8) + histogram[x][y];
+					//rgb = (histogram[x][y] << 16) + (histogram[x][y] << 8) + histogram[x][y];
+					rgb = new Color(histogram[x][y], histogram[x][y], histogram[x][y] ).getRGB();
 				}
 				changed_image.setRGB(x, y, rgb);
 			}
