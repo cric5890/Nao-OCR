@@ -44,7 +44,7 @@ public class FindPlaque {
 						int x = i % width;
 						int pos[] = {x,y};
 						positions.add(pos);
-						System.out.println("pos = (" + x + ", " + y + ")");
+						//System.out.println("pos = (" + x + ", " + y + ")");
 						countSameData(c);
 					}
 				}

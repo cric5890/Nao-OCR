@@ -518,6 +518,8 @@ public class FilterImage {
 			int start_y = container[0];
 			int plaque_height = container[1];
 			
+			System.out.println("Pos: (" + start_x + "," + start_y + " length: (" + plaque_width + "," + plaque_height + ")");
+			
 			int new_rgb[] = new int[ (plaque_width) * (plaque_height)];
 			int new_rgb_counter = 0;
 			for ( int y = start_y; y < plaque_height+start_y; y++ ) {
@@ -547,16 +549,16 @@ public class FilterImage {
 		for ( int i = 0; i < horz_lines.size(); i++ ) {
 			horz_count[i] = 0;
 			for ( int j = 0; j < fp.positions.size(); j++ ) {
-				if ( fp.positions.get(j)[0] > horz_lines.get(i)[0] && fp.positions.get(j)[0] < horz_lines.get(i)[0] + horz_lines.get(i)[1] ) {
+				if ( fp.positions.get(j)[0] > horz_lines.get(i)[0] - horz_lines.get(i)[1] && fp.positions.get(j)[0] < horz_lines.get(i)[0] + horz_lines.get(i)[1] ) {
 					horz_count[i]++;
 				}
 			}
 		}
 		
 		for ( int i = 0; i < vert_lines.size(); i++ ) {
-			horz_count[i] = 0;
+			vert_count[i] = 0;
 			for ( int j = 0; j < fp.positions.size(); j++ ) {
-				if ( fp.positions.get(j)[1] > vert_lines.get(i)[0] && fp.positions.get(j)[1] < vert_lines.get(i)[0] + vert_lines.get(i)[1] ) {
+				if ( fp.positions.get(j)[1] > vert_lines.get(i)[0] - vert_lines.get(i)[1] && fp.positions.get(j)[1] < vert_lines.get(i)[0] + vert_lines.get(i)[1] ) {
 					vert_count[i]++;
 				}
 			}
@@ -578,6 +580,7 @@ public class FilterImage {
 				vert_index = i;
 			}
 		}
+		System.out.println("Max: " + horz_max + "," + vert_max);
 		int array[] = {horz_index, vert_index};
 		return array;
 	}
