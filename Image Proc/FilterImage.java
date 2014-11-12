@@ -543,6 +543,7 @@ public class FilterImage {
 	*/
 	private int[] compareLinesToColorDB(ArrayList<int[]> horz_lines, ArrayList<int[]> vert_lines ) {
 		FindPlaque fp = new FindPlaque(image);
+		fp.printCounts();
 		int horz_count[] = new int[horz_lines.size()];
 		int vert_count[] = new int[vert_lines.size()];
 		
@@ -659,7 +660,7 @@ public class FilterImage {
 				}
 			}
 		}	else if ( dir.equals("both") ) {
-			initFindPlaque(width, height,1,1);
+			initFindPlaque(width, height,2,2);
 			return;
 		}		
 		

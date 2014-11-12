@@ -69,7 +69,7 @@ public class FindPlaque {
 		}
 	}
 	
-	private void printCounts() {
+	public void printCounts() {
 		for ( int i = 0; i < this.values.size(); i++ ) {
 			Color c = this.values.get(i);
 			//if ( this.counts.get(i) > 100 ) {
