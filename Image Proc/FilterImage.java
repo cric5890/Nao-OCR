@@ -543,7 +543,7 @@ public class FilterImage {
 	*/
 	private int[] compareLinesToColorDB(ArrayList<int[]> horz_lines, ArrayList<int[]> vert_lines ) {
 		FindPlaque fp = new FindPlaque(image);
-		fp.printCounts();
+		//fp.printCounts();
 		int horz_count[] = new int[horz_lines.size()];
 		int vert_count[] = new int[vert_lines.size()];
 		
@@ -581,7 +581,7 @@ public class FilterImage {
 				vert_index = i;
 			}
 		}
-		System.out.println("Max: " + horz_max + "," + vert_max);
+		//System.out.println("Max: " + horz_max + "," + vert_max);
 		int array[] = {horz_index, vert_index};
 		return array;
 	}
