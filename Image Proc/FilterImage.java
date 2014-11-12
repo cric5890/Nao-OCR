@@ -660,7 +660,10 @@ public class FilterImage {
 				}
 			}
 		}	else if ( dir.equals("both") ) {
+			long start = System.nanoTime();
 			initFindPlaque(width, height,2,2);
+			long end = (System.nanoTime() - start)1000000000;
+			System.out.println("Took " + end + " seconds");
 			return;
 		}		
 		
