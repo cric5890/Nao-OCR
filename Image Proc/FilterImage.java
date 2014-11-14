@@ -443,7 +443,7 @@ public class FilterImage {
 		int start = 0;
 		int len = 0;
 		for ( int i = 0; i < width-1; i++ ) {
-			if ( horz_percent[i] > 0.0 || horz_percent[i+1] > 0 ) {
+			if ( horz_percent[i] > 0.0 ) {// || horz_percent[i+1] > 0 ) {
 				len++;
 			} else if ( horz_percent[i] == 0.0 && len > 50 ) {
 				int container[] = new int[2];
