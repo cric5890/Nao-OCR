@@ -123,15 +123,17 @@ public class Histogram {
 		
 		//int rgb = (gray << 16) + (gray << 8) + gray;
 	}
-	
-	public float[] histVert(int width, int height) {
+	/**
+		Counting rows from top to bottom
+	*/
+	public static float[] histVert(int width, int height, BufferedImage image) {
 		//System.out.println("==========Vertical Lines==========");
 		int count = 0;
 		float array[] = new float[height];
 		for(int y=0;y<height-1;y++){
 			count=0;
 			for(int x=0;x<width-1;x++){
-				Color c = new Color(changed_image.getRGB(x, y));
+				Color c = new Color(image.getRGB(x, y));
 				/*if ( 	c.getRed() >= 75 && c.getRed() <= 85 &&
 							c.getGreen() >= 80 && c.getGreen() <= 100 &&
 							c.getBlue() >= 90 && c.getBlue() <= 110 ) {	
@@ -154,14 +156,14 @@ public class Histogram {
 	/**
 		Counting columns from left to right
 	*/
-	public float[] histHoriz(int width, int height) {
+	public static float[] histHoriz(int width, int height, BufferedImage image) {
 		//System.out.println("==========Horizontal Lines==========");
 		float array[] = new float[width];
 		int count = 0;
 		for(int x=0;x<width-1;x++){
 			count=0;
 			for(int y=0;y<height-1;y++){
-				Color c = new Color(changed_image.getRGB(x, y));
+				Color c = new Color(image.getRGB(x, y));
 				/*if ( 	c.getRed() >= 75 && c.getRed() <= 85 &&
 							c.getGreen() >= 80 && c.getGreen() <= 100 &&
 							c.getBlue() >= 90 && c.getBlue() <= 110 ) {	
@@ -189,7 +191,7 @@ public class Histogram {
 		
 		@return A new float[] of removed values
 	*/
-	private float[] removeModeAndLess(float old[]) {
+	private static float[] removeModeAndLess(float old[]) {
 		ArrayList<Float> values = new ArrayList<>();
 		ArrayList<Integer> counts = new ArrayList<>();
 		values.add(old[0]);
@@ -414,10 +416,10 @@ public class Histogram {
 									-1, -1, -1 };
 		//horizontal
 		changed_image = FilterImage.filterImage(image, top_filter);
-		float horz_percent[] = histHoriz(width, height);
+		float horz_percent[] = histHoriz(width, height, changed_image);
 		//vertical
 		changed_image = FilterImage.filterImage(image, left_filter);
-		float vert_percent[] = histVert(width, height);
+		float vert_percent[] = histVert(width, height, changed_image);
 		findPlaque(horz_percent, vert_percent, width, height, image);
 		return;
 	}
