@@ -5,6 +5,8 @@ import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.util.Arrays;
 
@@ -243,52 +245,72 @@ public class ImageManip extends JPanel {
 		BufferedImage originalImage = new BufferedImage(width, height,BufferedImage.TYPE_BYTE_GRAY);
 		Graphics g1 = originalImage.getGraphics(); 
 		g1.drawImage(myPic, 0, 0, null);  
-		g1.dispose();
-
-		//vertical filter
-		int[] array2 = {-1, 0, 1, -2, 0, 2, -1, 0, 1};
+		g1.dispose();		
+		
+		AffineTransform transform = new AffineTransform();
+	    transform.rotate(.2, myPic.getWidth()/2, myPic.getHeight()/2);
+	    AffineTransformOp op = new AffineTransformOp(transform, AffineTransformOp.TYPE_BILINEAR);
+	    BufferedImage rotate = op.filter(myPic, null);
+		
+		//filters
+		int[] array1 = {1, 8, 1, 0, 0, 0, -1, -8, -1};
+		int[] array2 = {-1, 0, 1, -4, 0, 4, -1, 0, 1};
+		int[] array3 = {1,4,1,4,-19,4,1,4,1};//tester
+		int[] holdArray = new int[800];
+		
 		BufferedImage vertImage = FilterImage.filterImage(originalImage, array2);
-
-		//vertical histogram
 		histogram = new Histogram("vert", vertImage);
-
-		//deriving numbers position
+		BufferedImage disBitch = histogram.getImage();
+		int sum =0;
+		for (int i = 0; i < height; i++){
+			for(int j =0; j < width; j++){
+				if(new Color(disBitch.getRGB(j, i)).getRed() == 0){
+					sum++;
+				} 
+			}
+			holdArray[i] = sum;
+			sum =0;
+		}
+		Arrays.sort(holdArray);
+		
 		int yMid = skipToBlack( histogram.getImage(), height, "V");
-
-		//selecting the numbers
 		int yNew = yMid-15;
+		
+		if (holdArray[holdArray.length-1] < 10 || holdArray[holdArray.length-1] > 15){
+			originalImage = rotate;
+		}
+		
 		BufferedImage numStrip = new BufferedImage(width, 32, BufferedImage.TYPE_BYTE_GRAY);
 		for(int x = 0; x < width; x++){
 			for(int y = 0; y < 32; y++){
-				Color c= new Color(originalImage.getRGB(x, yNew), true);
+				Color c= new Color(originalImage.getRGB(x, yNew), true);//inputs here
 				numStrip.setRGB(x, y, c.getRGB());
 				yNew ++;
 			}
 			yNew = yMid-15;
 		}
-		displayImage(numStrip);
-
-		//horizontal filter
-		int[] array1 = {1, 2, 1, 0, 0, 0, -1, -2, -1};
+		
 		BufferedImage horzImage = FilterImage.filterImage(numStrip, array1);
 		displayImage(horzImage);
-
-		//horizontal histogram
 		histogram = new Histogram("horz", horzImage);
-		
-		//deriving numbers position
 		int xStart = skipToBlack( histogram.getImage(), width, "H");
+		int xFin = xStart + 75; //Space
+		int xPos = 0;
+		if( xFin > width){
+			xFin = width;
+		}
 		
-		int xNew = xStart-5;
-		BufferedImage nums = new BufferedImage(50, 32, BufferedImage.TYPE_BYTE_GRAY);
-		for(int x = 0; x < 50; x++){
+		BufferedImage nums = new BufferedImage(76, 32, BufferedImage.TYPE_BYTE_GRAY);
+		for(int x = xStart; x < xFin; x++){
 			for(int y = 0; y < 32; y++){
-				Color c= new Color(numStrip.getRGB(xNew, y), true);
-				nums.setRGB(x, y, c.getRGB());
+				Color c= new Color(numStrip.getRGB(x, y), true);
+				nums.setRGB(xPos, y, c.getRGB());
 			}
-			xNew++;
+			xPos++;
 		}
 		displayImage(nums);
+		BufferedImage nums2 = FilterImage.filterImage(nums,array3);
+		displayImage(nums2);
 	}
 
 	public void displayImage(BufferedImage image){
@@ -324,7 +346,7 @@ public class ImageManip extends JPanel {
 		//vertical histogram
 		else if(dir =="V"){
 			while (isBlack == false){ 
-				if( new Color(image.getRGB(5, i)).getRed() == 0){ //THRESHOLD
+				if( new Color(image.getRGB(3, i)).getRed() == 0){ //THRESHOLD
 					isBlack = true;
 				} 
 				i++;
@@ -332,7 +354,7 @@ public class ImageManip extends JPanel {
 			while (isBlack == true && i < max){
 				var1 += i;
 				var2 ++;
-				if(new Color(image.getRGB(5, i)).getRed() != 0){ 
+				if(new Color(image.getRGB(3, i)).getRed() != 0){ 
 					isBlack = false;
 				}
 				i++;
@@ -598,27 +620,6 @@ public class ImageManip extends JPanel {
 
 		sumTotal = whiteSum + blackSum;
 		vector[3] = blackSum/sumTotal;
-	}
-
-	public int NAOUtil(int x, int y, BufferedImage image){
-		int sum =0;
-		for(int i =-1;i<=1;i++){
-			for (int j = -1; j <= 1; j++){
-				Color c= new Color(image.getRGB(x+i, y+j), true);
-				int temp = -1*c.getRed();
-				if(i ==0 && j ==0){
-					temp = temp*-9;
-				}
-				sum+=temp;
-			}
-		}
-		if(sum > 215){
-			sum = 255;
-		}
-		else {
-			sum =0;
-		}
-		return sum;
 	}
 
 }
