@@ -401,6 +401,17 @@ public class Histogram {
 	
 	private int top_center_value = 0;
 	private int left_center_value = 0;
+	/**
+		Sets up filters and find percent of black pixels in horz and vert direction
+		then sends it to find the plaque
+		
+		Parameters:
+			width 	-	width of image
+			height	-	height of image
+			incr_top	-	used to increase the weight on the center value of horz filter
+			incr_left	-	used to increase the weight on the center value of vert filter
+			image		-	the image to be filtered
+	*/
 	public void initFindPlaque(int width, int height, int incr_top, int incr_left, BufferedImage image ) {
 		top_center_value+=incr_top;
 		left_center_value+=incr_left;
