@@ -1,5 +1,3 @@
-package stal8920;
-
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.GridLayout;
@@ -18,7 +16,6 @@ import javax.swing.JPanel;
 public class ImageManip extends JPanel {
 
 	public boolean USED = true;
-	ImageArea myArea;
 	BufferedImage myPic = null;
 	Histogram histogram;
 
@@ -91,9 +88,19 @@ public class ImageManip extends JPanel {
 		myArea.add(picLabel3);
 		myArea.validate();
 	}
-
-	public void feature(BufferedImage myPic, int width, int height){
-
+	
+	/**
+	 * pass it a picture, it creates 8 numbers (the features)
+	 * DEFINTELY SHOULD BE SQUARE 
+	 *
+	 *
+	 * @param myPic - the number
+	 */
+	
+	public void feature(BufferedImage myPic){
+		int width = myPic.getWidth();
+		int height = myPic.getHeight();
+		
 		//The image loaded in
 		BufferedImage originalImage = new BufferedImage(width, height,BufferedImage.TYPE_BYTE_GRAY);
 		Graphics g1 = originalImage.getGraphics(); 
@@ -247,25 +254,6 @@ public class ImageManip extends JPanel {
 		return max;
 	}
 	
-	/**
-	 * displays an inputted image
-	 * 
-	 * @param image - please
-	 */
-	
-	public void displayImage(BufferedImage image){
-		//Loading in the filtered image
-		Graphics g2 = image.getGraphics(); 
-		g2.drawImage(image, 0, 0, null);  
-		g2.dispose();
-
-		//Displaying
-		JLabel picLabel2 = new JLabel(new ImageIcon(image));
-		myArea.add(picLabel2);
-		myArea.validate();
-	}
-
-
 	/**
 	 * Skips to first large run of black on a given histogram
 	 * 
