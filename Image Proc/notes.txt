@@ -1,0 +1,5 @@
+horz filter = 9x9 all ones 1 and -91 in mid
+vert filter = 
+		[ -1 0 1]
+		[ -2 0 2]
+		[ -1 0 1]
