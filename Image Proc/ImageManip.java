@@ -19,25 +19,13 @@ public class ImageManip extends JPanel {
 	BufferedImage myPic = null;
 	Histogram histogram;
 
-	public ImageManip(ImageArea area, BufferedImage myImage){
-		myArea = area;
+	public ImageManip(BufferedImage myImage){
 		myPic = myImage;
-		drawComponents();
-		addListeners();
 	}
 
 	JButton thin = new JButton("Thin The Image (ZS)");
 	JButton feature = new JButton("Create feature vector");
 	JButton NAO = new JButton("The Nao Button");
-
-	public void drawComponents(){
-		JPanel pnl = new JPanel();
-		pnl.setLayout(new GridLayout(8, 1));
-		pnl.add(thin);
-		pnl.add(feature);
-		pnl.add(NAO);
-		this.add(pnl);
-	}
 
 	public void thin(BufferedImage myPic, int width, int height){
 
