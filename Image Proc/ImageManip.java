@@ -409,8 +409,8 @@ public class ImageManip extends JPanel {
 		for(int i = x; i < x+xStep; i++){
 			for (int j = y; j < y+yStep; j++){
 				Color c= new Color(image.getRGB(i, j), true);
-				if( c.getRed() == 255){ whiteSum++; }
-				if( c.getRed() == 0){ blackSum++; }
+				if( c.getRed() >= 250){ whiteSum++; }
+				if( c.getRed() <= 5){ blackSum++; }
 			}
 		}
 		float d = whiteSum + blackSum;
@@ -436,8 +436,8 @@ public class ImageManip extends JPanel {
 		for( int y = 0; y < mid; y++ ){
 			for (int x = y; x < width - y; x ++){
 				Color c= new Color(image.getRGB(x, y), true);
-				if( c.getRed() == 255){ whiteSum++; }
-				if( c.getRed() == 0){ blackSum++; }
+				if( c.getRed() >= 250){ whiteSum++; }
+				if( c.getRed() <= 5){ blackSum++; }
 			}
 		}
 		float sumTotal = whiteSum + blackSum;
@@ -451,8 +451,8 @@ public class ImageManip extends JPanel {
 		for( int y = height -1; y > mid; y-- ){
 			for (int x = indent; x < width - indent; x ++){
 				Color c= new Color(image.getRGB(x, y), true);
-				if( c.getRed() == 255){ whiteSum++; }
-				if( c.getRed() == 0){ blackSum++; }
+				if( c.getRed() >= 250){ whiteSum++; }
+				if( c.getRed() <= 5){ blackSum++; }
 			}
 			indent++;
 		}
@@ -466,8 +466,8 @@ public class ImageManip extends JPanel {
 		for( int y = 0; y < mid; y++ ){
 			for (int x = y; x < width - y; x ++){
 				Color c= new Color(image.getRGB(y, x), true);
-				if( c.getRed() == 255){ whiteSum++; }
-				if( c.getRed() == 0){ blackSum++; }
+				if( c.getRed() >= 250){ whiteSum++; }
+				if( c.getRed() <= 5){ blackSum++; }
 			}
 		}
 		sumTotal = whiteSum + blackSum;
@@ -481,8 +481,8 @@ public class ImageManip extends JPanel {
 		for( int y = height -1; y > mid; y-- ){
 			for (int x = indent; x < width - indent; x ++){
 				Color c= new Color(image.getRGB(x, y), true);
-				if( c.getRed() == 255){ whiteSum++; }
-				if( c.getRed() == 0){ blackSum++; }
+				if( c.getRed() >= 250){ whiteSum++; }
+				if( c.getRed() <= 5){ blackSum++; }
 			}
 			indent++;
 		}
