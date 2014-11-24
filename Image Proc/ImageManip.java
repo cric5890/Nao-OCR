@@ -29,9 +29,6 @@ public class ImageManip extends JPanel {
 		addListeners();
 	}
 
-	JButton lowPass = new JButton("Apply Low Pass Filter");
-	JButton highPass = new JButton("Apply High Pass Filter");
-	JButton scale = new JButton("Scale The Image");
 	JButton thin = new JButton("Thin The Image (ZS)");
 	JButton feature = new JButton("Create feature vector");
 	JButton NAO = new JButton("The Nao Button");
@@ -39,123 +36,10 @@ public class ImageManip extends JPanel {
 	public void drawComponents(){
 		JPanel pnl = new JPanel();
 		pnl.setLayout(new GridLayout(8, 1));
-		pnl.add(lowPass);
-		pnl.add(highPass);
-		pnl.add(scale);
 		pnl.add(thin);
 		pnl.add(feature);
 		pnl.add(NAO);
 		this.add(pnl);
-	}
-
-	public void lowPass(BufferedImage myPic, int width, int height){
-
-		//The empty image we manipulate
-		BufferedImage tempImage = new BufferedImage(width, height,BufferedImage.TYPE_BYTE_GRAY);
-
-		//The old image loaded in
-		BufferedImage originalImage = new BufferedImage(width, height,BufferedImage.TYPE_BYTE_GRAY);
-		Graphics g1 = originalImage.getGraphics(); 
-		g1.drawImage(myPic, 0, 0, null);  
-		g1.dispose();
-
-		//Looping through the pixels
-		for(int i = 2; i <=width-2; i++){
-			for(int j = 2; j <= height-2; j++){
-
-				//From old image to new image
-				int temp_pixel = lowPassUtil(i,j,originalImage);
-				Color c_temp = new Color(temp_pixel, temp_pixel, temp_pixel);
-				tempImage.setRGB(i, j, c_temp.getRGB());
-			}
-		}
-
-		//Loading in the filtered image
-		Graphics g2 = tempImage.getGraphics(); 
-		g2.drawImage(tempImage, 0, 0, null);  
-		g2.dispose();
-
-		//Displaying
-		JLabel picLabel2 = new JLabel(new ImageIcon(tempImage));
-		myArea.add(picLabel2);
-		myArea.validate();
-	}
-
-	public void highPass(BufferedImage myPic, int width, int height){
-
-		//The empty image we manipulate
-		BufferedImage tempImage = new BufferedImage(width, height,BufferedImage.TYPE_BYTE_GRAY);
-
-		//The old image loaded in
-		BufferedImage originalImage = new BufferedImage(width, height,BufferedImage.TYPE_BYTE_GRAY);
-		Graphics g1 = originalImage.getGraphics(); 
-		g1.drawImage(myPic, 0, 0, null);  
-		g1.dispose();
-
-
-		//Looping through the pixels
-		for(int i = 2; i <=width-2; i++){
-			for(int j = 2; j <= height-2; j++){
-
-				//From old image to new image
-				int temp_pixel = highPassUtil(i,j,originalImage);
-				Color c_temp = new Color(temp_pixel, temp_pixel, temp_pixel);
-				tempImage.setRGB(i, j, c_temp.getRGB());
-			}
-		}
-
-		//Loading in the filtered image
-		Graphics g2 = tempImage.getGraphics(); 
-		g2.drawImage(tempImage, 0, 0, null);  
-		g2.dispose();
-
-		//Displaying
-		JLabel picLabel2 = new JLabel(new ImageIcon(tempImage));
-		myArea.add(picLabel2);
-		myArea.validate();
-	}
-
-	public void scale(BufferedImage myPic, int width, int height){
-
-		//The empty image we manipulate
-		BufferedImage tempImage = new BufferedImage(width, height,BufferedImage.TYPE_BYTE_GRAY);
-
-		//The old image loaded in
-		BufferedImage originalImage = new BufferedImage(width, height,BufferedImage.TYPE_BYTE_GRAY);
-		Graphics g1 = originalImage.getGraphics(); 
-		g1.drawImage(myPic, 0, 0, null);  
-		g1.dispose();
-
-		int xpos = 2;
-		int ypos = 2;
-
-		//Looping through the pixels
-		for(int i = 2; i <=width-2; i+=3){
-
-			//reset
-			ypos = 2;
-
-			for(int j = 2; j <= height-2; j+=3){
-
-				//From old image to new image
-				int temp_pixel = scaleUtil(i,j,originalImage);
-				Color c_temp = new Color(temp_pixel, temp_pixel, temp_pixel);
-				tempImage.setRGB(xpos, ypos, c_temp.getRGB());
-
-				ypos++;
-			}
-			xpos++;
-		}
-
-		//Loading in the filtered image
-		Graphics g2 = tempImage.getGraphics(); 
-		g2.drawImage(tempImage, 0, 0, null);  
-		g2.dispose();
-
-		//Displaying
-		JLabel picLabel2 = new JLabel(new ImageIcon(tempImage));
-		myArea.add(picLabel2);
-		myArea.validate();
 	}
 
 	public void thin(BufferedImage myPic, int width, int height){
@@ -239,50 +123,63 @@ public class ImageManip extends JPanel {
 		System.out.format("\n%.3f North\n%.3f South\n%.3f West\n%.3f East\n", vector2[0], vector2[1], vector2[2], vector2[3] );
 	}
 
-	public void NAOPass(BufferedImage myPic, int width, int height){
-
+	/**
+	 * This is the money maker. Call it and it finds the numbers on the plaque
+	 * 
+	 * @param myPic - the plaque
+	 * @param width - pic width
+	 * @param height - pic height 
+	 */
+	public void NAOPass(BufferedImage myPic, int width, int height){	
 		//The old image loaded in
 		BufferedImage originalImage = new BufferedImage(width, height,BufferedImage.TYPE_BYTE_GRAY);
 		Graphics g1 = originalImage.getGraphics(); 
 		g1.drawImage(myPic, 0, 0, null);  
 		g1.dispose();		
-
+		
+		//Declaring
 		BufferedImage rotate = originalImage;
-
-		//filters
+		int xPos = 0;
+		//Filters
 		int[] array1 = {1, 8, 1, 0, 0, 0, -1, -8, -1};
 		int[] array2 = {-1, 0, 1, -8, 0, 8, -1, 0, 1};
 		int[] array3 = {1,4,1,4,-19,4,1,4,1};//tester
-
+		
+		//Filter the Image, create a histogram, rotate if necessary
 		BufferedImage vertImage = FilterImage.filterImage(originalImage, array1);
 		histogram = new Histogram("vert", vertImage);
-
 		float vertMax = maxOfHist(Histogram.histVert(vertImage.getWidth(),vertImage.getHeight(),vertImage));
 		if (vertMax <  25.0){
-			float rotateFactor = (30 - vertMax)/80;
+			float rotateFactor = (30 - vertMax)/80;//Magic
 			rotate = rotateByX(originalImage,rotateFactor);
 		}
-
+		
+		//Setting up the bounds for image traversal
 		int yMid = skipToBlack( histogram.getImage(), histogram.getImage().getHeight(), 15, "V");
-		int[] yArray = setParams(yMid,histogram.getImage().getHeight(),30);//pixel allowance
+		int[] yArray = setParams(yMid,histogram.getImage().getHeight(),30);//Magic
 		if(yArray[0] == 0){ yArray[1] = 60; }
+		
+		//Loading into the new image
 		BufferedImage numStrip = new BufferedImage(width, 62, BufferedImage.TYPE_BYTE_GRAY);
 		for(int x = 0; x < width; x++){
 			int yNew = yArray[0];
 			for(int y = 0; y < (yArray[1]-yArray[0]); y++){
-				Color c= new Color(rotate.getRGB(x, yNew), true);//inputs here
+				Color c= new Color(rotate.getRGB(x, yNew), true);
 				numStrip.setRGB(x, y, c.getRGB());
 				yNew ++;
 			}
 		}
-
+		
+		//Filter the Image, create a histogram
 		BufferedImage horzImage = FilterImage.filterImage(numStrip, array2);
 		histogram = new Histogram("horz", horzImage);
-		int xMid = skipToBlack( histogram.getImage(), histogram.getImage().getWidth(), 1, "H");
 		
-		int xBound = (int)(histogram.getImage().getWidth()/2);//pixel allowance
-		int xPos = 0;
+		//Setting up the bounds for image traversal
+		int xMid = skipToBlack( histogram.getImage(), histogram.getImage().getWidth(), 1, "H");
+		int xBound = (int)(histogram.getImage().getWidth()/2);//Magic
 		int[] xArray = setParams(xMid,histogram.getImage().getWidth(),xBound/2);
+		
+		//Loading into the new image
 		BufferedImage nums = new BufferedImage(xBound, 60, BufferedImage.TYPE_BYTE_GRAY);
 		for(int x = xArray[0]; x < xArray[1]; x++){
 			for(int y = 0; y < 60; y++){
@@ -292,8 +189,16 @@ public class ImageManip extends JPanel {
 			xPos++;
 		}
 		displayImage(nums);
-
 	}
+	
+	/**
+	 * Sets an upper and lower bound for picture traversal while not exceeding a max in either direction. 1D
+	 * 
+	 * @param mid - the middle of the image space we want to pull
+	 * @param max - Upper bound of the original image we are pulling from
+	 * @param bound - the boundary, going in both directions
+	 * @return an array of the format a[start,finish]
+	 */
 	
 	public int[] setParams(int mid, int max, int bound){
 		int[] retArray = new int[2];
@@ -304,6 +209,14 @@ public class ImageManip extends JPanel {
 		return retArray;
 	}
 	
+	/**
+	 * Rotates an image by a pre-determined factor (typically <0.5)
+	 * 
+	 * @param from - the image to rotate
+	 * @param by - the factor top rotate it by
+	 * @return - the rotated image
+	 */
+	
 	public BufferedImage rotateByX(BufferedImage from, float by){
 		AffineTransform transform = new AffineTransform();
 		transform.rotate(by, from.getWidth()/2, from.getHeight()/2);
@@ -311,7 +224,14 @@ public class ImageManip extends JPanel {
 		BufferedImage to = op.filter(from, null);
 		return to;
 	}
-
+	
+	/**
+	 * Finds the maximum value of a given array, and it's location (not returned as of right now)
+	 * 
+	 * @param myArray - array to search through
+	 * @return the max value in the array
+	 */
+	
 	public float maxOfHist(float[] myArray){
 		Float[] Array = new Float[myArray.length];
 		int alpha = 0;
@@ -323,7 +243,13 @@ public class ImageManip extends JPanel {
 		//int location = Arrays.asList(intArray).indexOf(max);
 		return max;
 	}
-
+	
+	/**
+	 * displays an inputted image
+	 * 
+	 * @param image - please
+	 */
+	
 	public void displayImage(BufferedImage image){
 		//Loading in the filtered image
 		Graphics g2 = image.getGraphics(); 
@@ -337,7 +263,16 @@ public class ImageManip extends JPanel {
 	}
 
 
-	//skips to first large run of black on histogram
+	/**
+	 * Skips to first large run of black on a given histogram
+	 * 
+	 * @param image - the histogram
+	 * @param max - the upper bound, usually image.width or image.height
+	 * @param thresh - the threshold of spike you want to count. Lower number = more noise caught 
+	 * @param dir - moving in horizontal or vertical direction
+	 * @return the location of the middle of the peaks thought to be the numbers
+	 */
+	
 	public int skipToBlack(BufferedImage image, int max, int thresh, String dir){
 		int sum = 0;
 		int count = 0;
@@ -353,9 +288,7 @@ public class ImageManip extends JPanel {
 				} 
 				i++;
 			}
-			if( count != 0){
-				retVal = sum/count;
-			}
+			if( count != 0){ retVal = sum/count; }
 		}
 
 		//vertical histogram
@@ -374,39 +307,14 @@ public class ImageManip extends JPanel {
 				}
 				i++;
 			}
-			if( count != 0){
-				retVal = sum/count;
-			}
+			if( count != 0){ retVal = sum/count;}
 		}
-		if(i == max){
-			System.out.println("Not Found");
-		}
+		if(i == max){ System.out.println("Not Found"); }
 		return retVal;
 	}
 
 	//Add button listeners
 	public void addListeners() {
-		lowPass.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent evt) {
-				lowPass(myPic, myPic.getWidth(), myPic.getHeight());
-			}
-		});
-
-		highPass.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent evt) {
-				highPass(myPic, myPic.getWidth(), myPic.getHeight());
-			}
-		});
-
-		scale.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent evt) {
-				scale(myPic, myPic.getWidth(), myPic.getHeight());
-			}
-		});
-
 		thin.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent evt) {
@@ -428,68 +336,22 @@ public class ImageManip extends JPanel {
 			}
 		});
 	}
-
-	public int lowPassUtil(int x, int y, BufferedImage image){
-		int sum = 0;
-		for(int i =-1;i<=1;i++){
-			for (int j = -1; j <= 1; j++){
-				Color c= new Color(image.getRGB(x+i, y+j), true);
-				sum+=c.getRed();
-			}
-		}
-		sum = sum/9;
-		return sum;
-	}
-
-	public int highPassUtil(int x, int y, BufferedImage image){
-		int sum = 0;
-		for(int i =-1;i<=1;i++){
-			for (int j = -1; j <= 1; j++){
-				Color c= new Color(image.getRGB(x+i, y+j), true);
-				int temp = -1*c.getRed();
-				if(i ==0 && j ==0){
-					temp = temp*-9;
-				}
-				sum+=temp;
-			}
-		}
-		if(sum > 255){
-			sum = 255;
-		}
-		else if (sum < 0){
-			sum =0;
-		}
-		return sum;
-	}
-
-	public int scaleUtil(int x, int y, BufferedImage image){
-		int[] myArray = new int[9];
-		int index = 0;
-		for(int i =-1;i<=1;i++){
-			for (int j = -1; j <= 1; j++){
-				Color c= new Color(image.getRGB(x+i, y+j), true);
-				myArray[index] = c.getRed();
-				index++;
-			}
-		}
-
-		Arrays.sort(myArray);
-		int median = myArray[4];
-		return median;
-	}
-
+	
+	/** thins using the ZS method
+	 * 
+	 * @param x - position of pixel in x dimension
+	 * @param y - position of pixel in y dimension
+	 * @param image - please
+	 * @return the sorted array used for thinning
+	 */
 	public int[] thinUtil(int x, int y, BufferedImage image){
 		int[] myArray = new int[9];
 		int index = 0;
 		for(int i =-1;i<=1;i++){
 			for (int j = -1; j <= 1; j++){
 				Color c= new Color(image.getRGB(x+i, y+j), true);
-				if (c.getRed() >= 127){
-					myArray[index] = 0;
-				}
-				else{
-					myArray[index] = 1;
-				}
+				if (c.getRed() >= 127){	myArray[index] = 0;	}
+				else{ myArray[index] = 1; }
 				index++;
 			}
 		}
@@ -508,16 +370,22 @@ public class ImageManip extends JPanel {
 
 		return thinArray;
 	}
-
+	
+	/**
+	 * Does the sub passes of thinning. Used in combination with thinUtil (poorly) 
+	 * 
+	 * @param thinArray - sorted array to check for thinning
+	 * @param side - LS or RS pass
+	 * @return either a white (255) or black (0) pixel 
+	 */
+	
 	public int ZSsubPass(int[] thinArray, boolean side){
 		int sumPixels = 0;
 		for (int i = 0; i < 8; i++){
 			sumPixels += thinArray[i]; //only up to 8 because the 9th array slot is the center pixel
 		}
-
 		//Condition (a)
 		if(sumPixels >= 2 && sumPixels <= 6){
-
 			int sumCycles = 0;
 			for(int j = 0; j < 7;j++){
 				if(thinArray[j] == 0 && thinArray[j+1] ==1){ sumCycles ++;}
@@ -526,19 +394,14 @@ public class ImageManip extends JPanel {
 
 			//Condition (b)
 			if(sumCycles == 1 && thinArray[8] != 0){
-
-				//System.out.println(Arrays.toString(thinArray));
 				if (side == true){
-
 					//Conditions (c)and (d)	
 					if(thinArray[1]*thinArray[3]*thinArray[5] == 0 && thinArray[3]*thinArray[5]*thinArray[7] == 0){ thinArray[8] = 0; USED = true; }
 				}
 				else{
-
 					//Conditions (c') and (d')	
 					if(thinArray[1]*thinArray[3]*thinArray[7] == 0 && thinArray[1]*thinArray[5]*thinArray[7] == 0){ thinArray[8] = 0; USED = true;}
 				}
-
 			}
 		}
 
@@ -549,7 +412,18 @@ public class ImageManip extends JPanel {
 		}
 		return result;
 	}
-
+	
+	/**
+	 * Creates a feature vector for a given section of an image
+	 * 
+	 * @param x - starting position
+	 * @param y - starting position
+	 * @param xStep - number of pixels to go along
+	 * @param yStep - number of pixels to go along
+	 * @param image - please
+	 * @return percent of black pixels
+	 */
+	
 	public float featureUtil(int x, int y, int xStep, int yStep, BufferedImage image){
 		int blackSum = 0;
 		int whiteSum = 0;
@@ -564,7 +438,13 @@ public class ImageManip extends JPanel {
 		float sum = blackSum/d;
 		return sum;
 	}
-
+	
+	/** fills the given array with percentages of black:total of the image in the format [N,S,W,E]
+	 * 
+	 * @param image - please
+	 * @param vector - the given vector to fill
+	 */
+	
 	public void featureUtilPie(BufferedImage image, float[] vector){
 		int height = image.getHeight();
 		int width = image.getWidth();
@@ -572,7 +452,6 @@ public class ImageManip extends JPanel {
 		int blackSum = 0;
 		int whiteSum = 0;
 		int mid = height/2;
-
 
 		//North pass
 		for( int y = 0; y < mid; y++ ){
@@ -582,7 +461,6 @@ public class ImageManip extends JPanel {
 				if( c.getRed() == 0){ blackSum++; }
 			}
 		}
-
 		float sumTotal = whiteSum + blackSum;
 		vector[0] = blackSum/sumTotal;
 
@@ -599,7 +477,6 @@ public class ImageManip extends JPanel {
 			}
 			indent++;
 		}
-
 		sumTotal = whiteSum + blackSum;
 		vector[1] = blackSum/sumTotal;
 
@@ -614,7 +491,6 @@ public class ImageManip extends JPanel {
 				if( c.getRed() == 0){ blackSum++; }
 			}
 		}
-
 		sumTotal = whiteSum + blackSum;
 		vector[2] = blackSum/sumTotal;
 
@@ -628,13 +504,10 @@ public class ImageManip extends JPanel {
 				Color c= new Color(image.getRGB(x, y), true);
 				if( c.getRed() == 255){ whiteSum++; }
 				if( c.getRed() == 0){ blackSum++; }
-				//System.out.println( x + " " + y + " " + c.getRed());
 			}
 			indent++;
 		}
-
 		sumTotal = whiteSum + blackSum;
 		vector[3] = blackSum/sumTotal;
 	}
-
 }
