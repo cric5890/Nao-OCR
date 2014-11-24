@@ -130,7 +130,10 @@ public class ImageManip extends JPanel {
 	 * @param width - pic width
 	 * @param height - pic height 
 	 */
-	public void NAOPass(BufferedImage myPic, int width, int height){	
+	public BufferedImage NAOPass(BufferedImage myPic){	
+		int width = myPic.getWidth();
+		int height = myPic.getHeight();
+		
 		//The old image loaded in
 		BufferedImage originalImage = new BufferedImage(width, height,BufferedImage.TYPE_BYTE_GRAY);
 		Graphics g1 = originalImage.getGraphics(); 
@@ -188,7 +191,7 @@ public class ImageManip extends JPanel {
 			}
 			xPos++;
 		}
-		displayImage(nums);
+		return nums;
 	}
 	
 	/**
