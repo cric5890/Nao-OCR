@@ -1,4 +1,3 @@
-package stal8920;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
