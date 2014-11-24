@@ -246,71 +246,82 @@ public class ImageManip extends JPanel {
 		Graphics g1 = originalImage.getGraphics(); 
 		g1.drawImage(myPic, 0, 0, null);  
 		g1.dispose();		
-		
-		AffineTransform transform = new AffineTransform();
-	    transform.rotate(.2, myPic.getWidth()/2, myPic.getHeight()/2);
-	    AffineTransformOp op = new AffineTransformOp(transform, AffineTransformOp.TYPE_BILINEAR);
-	    BufferedImage rotate = op.filter(myPic, null);
-		
+
+		BufferedImage rotate = originalImage;
+
 		//filters
 		int[] array1 = {1, 8, 1, 0, 0, 0, -1, -8, -1};
-		int[] array2 = {-1, 0, 1, -4, 0, 4, -1, 0, 1};
+		int[] array2 = {-1, 0, 1, -8, 0, 8, -1, 0, 1};
 		int[] array3 = {1,4,1,4,-19,4,1,4,1};//tester
-		int[] holdArray = new int[800];
-		
-		BufferedImage vertImage = FilterImage.filterImage(originalImage, array2);
+
+		BufferedImage vertImage = FilterImage.filterImage(originalImage, array1);
 		histogram = new Histogram("vert", vertImage);
-		BufferedImage disBitch = histogram.getImage();
-		int sum =0;
-		for (int i = 0; i < height; i++){
-			for(int j =0; j < width; j++){
-				if(new Color(disBitch.getRGB(j, i)).getRed() == 0){
-					sum++;
-				} 
-			}
-			holdArray[i] = sum;
-			sum =0;
+
+		float vertMax = maxOfHist(Histogram.histVert(vertImage.getWidth(),vertImage.getHeight(),vertImage));
+		if (vertMax <  25.0){
+			float rotateFactor = (30 - vertMax)/80;
+			rotate = rotateByX(originalImage,rotateFactor);
 		}
-		Arrays.sort(holdArray);
-		
-		int yMid = skipToBlack( histogram.getImage(), height, "V");
-		int yNew = yMid-15;
-		
-		if (holdArray[holdArray.length-1] < 10 || holdArray[holdArray.length-1] > 15){
-			originalImage = rotate;
-		}
-		
-		BufferedImage numStrip = new BufferedImage(width, 32, BufferedImage.TYPE_BYTE_GRAY);
+
+		int yMid = skipToBlack( histogram.getImage(), histogram.getImage().getHeight(), 15, "V");
+		int[] yArray = setParams(yMid,histogram.getImage().getHeight(),30);//pixel allowance
+		if(yArray[0] == 0){ yArray[1] = 60; }
+		BufferedImage numStrip = new BufferedImage(width, 62, BufferedImage.TYPE_BYTE_GRAY);
 		for(int x = 0; x < width; x++){
-			for(int y = 0; y < 32; y++){
-				Color c= new Color(originalImage.getRGB(x, yNew), true);//inputs here
+			int yNew = yArray[0];
+			for(int y = 0; y < (yArray[1]-yArray[0]); y++){
+				Color c= new Color(rotate.getRGB(x, yNew), true);//inputs here
 				numStrip.setRGB(x, y, c.getRGB());
 				yNew ++;
 			}
-			yNew = yMid-15;
 		}
-		
-		BufferedImage horzImage = FilterImage.filterImage(numStrip, array1);
-		displayImage(horzImage);
+
+		BufferedImage horzImage = FilterImage.filterImage(numStrip, array2);
 		histogram = new Histogram("horz", horzImage);
-		int xStart = skipToBlack( histogram.getImage(), width, "H");
-		int xFin = xStart + 75; //Space
-		int xPos = 0;
-		if( xFin > width){
-			xFin = width;
-		}
+		int xMid = skipToBlack( histogram.getImage(), histogram.getImage().getWidth(), 1, "H");
 		
-		BufferedImage nums = new BufferedImage(76, 32, BufferedImage.TYPE_BYTE_GRAY);
-		for(int x = xStart; x < xFin; x++){
-			for(int y = 0; y < 32; y++){
+		int xBound = (int)(histogram.getImage().getWidth()/2);//pixel allowance
+		int xPos = 0;
+		int[] xArray = setParams(xMid,histogram.getImage().getWidth(),xBound/2);
+		BufferedImage nums = new BufferedImage(xBound, 60, BufferedImage.TYPE_BYTE_GRAY);
+		for(int x = xArray[0]; x < xArray[1]; x++){
+			for(int y = 0; y < 60; y++){
 				Color c= new Color(numStrip.getRGB(x, y), true);
 				nums.setRGB(xPos, y, c.getRGB());
 			}
 			xPos++;
 		}
 		displayImage(nums);
-		BufferedImage nums2 = FilterImage.filterImage(nums,array3);
-		displayImage(nums2);
+
+	}
+	
+	public int[] setParams(int mid, int max, int bound){
+		int[] retArray = new int[2];
+		if( mid -bound < 0){retArray[0] = 0;} 
+		else{retArray[0] = mid-bound;}
+		if(mid + bound >  max){ retArray[1] =  max;}
+		else{ retArray[1] = mid+bound;}
+		return retArray;
+	}
+	
+	public BufferedImage rotateByX(BufferedImage from, float by){
+		AffineTransform transform = new AffineTransform();
+		transform.rotate(by, from.getWidth()/2, from.getHeight()/2);
+		AffineTransformOp op = new AffineTransformOp(transform, AffineTransformOp.TYPE_BILINEAR);//Image gets slightly darker here
+		BufferedImage to = op.filter(from, null);
+		return to;
+	}
+
+	public float maxOfHist(float[] myArray){
+		Float[] Array = new Float[myArray.length];
+		int alpha = 0;
+		for (float value : myArray) {
+			Array[alpha++] = Float.valueOf(value);
+		}
+		Arrays.sort(myArray);
+		float max = myArray[myArray.length-1];
+		//int location = Arrays.asList(intArray).indexOf(max);
+		return max;
 	}
 
 	public void displayImage(BufferedImage image){
@@ -325,42 +336,46 @@ public class ImageManip extends JPanel {
 		myArea.validate();
 	}
 
+
 	//skips to first large run of black on histogram
-	public int skipToBlack(BufferedImage image, int max, String dir){
-		int var1 = 0;
-		int var2 = 0;
+	public int skipToBlack(BufferedImage image, int max, int thresh, String dir){
+		int sum = 0;
+		int count = 0;
 		int i = 0;
 		int retVal = 0;
 		boolean isBlack = false;
 
 		if (dir == "H"){
-			while (isBlack == false ){ 
-				if(new Color(image.getRGB(i, 3)).getRed() == 0){ //THRESHOLD
-					isBlack = true;
+			while( i < max -1){
+				if(new Color(image.getRGB(i, thresh)).getRed() == 0){ //THRESHOLD
+					sum+=i;
+					count++;
 				} 
 				i++;
 			}
-			retVal = i;
+			if( count != 0){
+				retVal = sum/count;
+			}
 		}
 
 		//vertical histogram
 		else if(dir =="V"){
-			while (isBlack == false){ 
-				if( new Color(image.getRGB(3, i)).getRed() == 0){ //THRESHOLD
+			while (isBlack == false && i < max - 1){ 
+				if( new Color(image.getRGB(thresh, i)).getRed() == 0){ //THRESHOLD
 					isBlack = true;
 				} 
 				i++;
 			}
-			while (isBlack == true && i < max){
-				var1 += i;
-				var2 ++;
-				if(new Color(image.getRGB(3, i)).getRed() != 0){ 
+			while (isBlack == true && i < max - 1){
+				sum += i;
+				count ++;
+				if(new Color(image.getRGB(thresh, i)).getRed() != 0){ //THRESHOLD 
 					isBlack = false;
 				}
 				i++;
 			}
-			if( var2 != 0){
-				retVal = var1/var2;
+			if( count != 0){
+				retVal = sum/count;
 			}
 		}
 		if(i == max){
