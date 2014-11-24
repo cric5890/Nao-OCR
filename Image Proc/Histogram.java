@@ -109,7 +109,8 @@ public class Histogram {
 				if ( x < array.length && array[x] > 0.0f && dir.equals("horz") ) {
 					//rgb = (histogram[x][y] << 16) + (histogram[x][y] << 8) + histogram[x][y];
 					rgb = new Color(histogram[x][y], histogram[x][y], histogram[x][y] ).getRGB();
-				} else if ( y < array.length && array[y] > 0.0f && dir.equals("vert") ) {
+				}
+				if ( y < array.length && array[y] > 0.0f && dir.equals("vert") ) {
 					//rgb = (histogram[x][y] << 16) + (histogram[x][y] << 8) + histogram[x][y];
 					rgb = new Color(histogram[x][y], histogram[x][y], histogram[x][y] ).getRGB();
 				}
@@ -152,7 +153,7 @@ public class Histogram {
 			array[y] = percent;
 		}
 		
-		return removeModeAndLess(array);
+		return array;//removeModeAndLess(array);
 	}
 	/**
 		Counting columns from left to right
@@ -182,7 +183,7 @@ public class Histogram {
 			array[x] = percent;
 		}
 		
-		return removeModeAndLess(array);
+		return array;//removeModeAndLess(array);
 	}
 	/**
 		Finds and sets all values to 0 that are equal to or less than the
@@ -433,6 +434,25 @@ public class Histogram {
 		changed_image = FilterImage.filterImage(image, left_filter);
 		float vert_percent[] = histVert(width, height, changed_image);
 		findPlaque(horz_percent, vert_percent, width, height, image);
+		
+		/*ImageManip room_nums = new ImageManip(this.changed_image);
+		this.changed_image = room_nums.NAOPass(this.changed_image);
+		
+		int large_filter[] = {	1,1,1,1,1,1,1,1,1
+								1,1,1,1,1,1,1,1,1
+								1,1,1,1,1,1,1,1,1
+								1,1,1,1,1,1,1,1,1
+								1,1,1,1,-81,1,1,1,1
+								1,1,1,1,1,1,1,1,1
+								1,1,1,1,1,1,1,1,1
+								1,1,1,1,1,1,1,1,1
+								1,1,1,1,1,1,1,1,1
+		this.changed_image = FilterImage.filterImage(this.changed_image, top_filter);
+		horz_percent[] = histHoriz(width, height, changed_image);
+		
+		changed_image = FilterImage.filterImage(image, left_filter);
+		vert_percent[] = histVert(width, height, changed_image);*/
+		
 		return;
 	}
 	
