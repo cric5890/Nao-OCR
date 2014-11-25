@@ -229,16 +229,17 @@ import java.io.FileWriter;
 		
 		
 		public float[] extractFeature(BufferedImage img){
-			int width, height;
+			int width, height,area;
 			double pos_slope, neg_slope; 
 			
 			float feature[] = new float[8];
 			
 			height = img.getHeight();
 			width = img.getWidth();
+			area = width*height;
 			
-			pos_slope = width/height;
-			neg_slope = -width/height;
+			pos_slope = height/width;
+			neg_slope = -height/width;
 			
 			Color levels = null;
 			
@@ -249,29 +250,44 @@ import java.io.FileWriter;
 						//Horz/Vert Slicing
 						if(x <= width/2 && y <= height/2){
 							//first sector
-							
+							feature[0]++;
 						}else if(x <= width/2 && y > height/2){
 							//second sector
+							feature[1]++;
 						}else if(x > width/2 && y <= height/2){
 							//third sector
+							feature[2]++;
 						}else if(x > width/2 && y > height/2){
 							//fourth sector
+							feature[3]++;
 						}
 						
 						//Diagonal Slicing
-						if(y > (neg_slope*x) && y > (pos_slope*x - height)){
+						if(-y > (neg_slope*x) && -y > ((pos_slope*x) - height)){
 							//first sector
-						}else if(y > (neg_slope*x) && y <= (pos_slope*x - height)){
+							feature[4]++;
+						}else if(-y > (neg_slope*x) && -y <= ((pos_slope*x) - height)){
 							//second sector
-						}else if(y <= (neg_slope*x) && y <= (pos_slope*x - height)){
+							feature[5]++;
+						}else if(-y <= (neg_slope*x) && -y <= ((pos_slope*x) - height)){
 							//third sector
-						}else if(y <= (neg_slope*x) && y > (pos_slope*x - height)){
+							feature[6]++;
+						}else if(-y <= (neg_slope*x) && -y > ((pos_slope*x) - height)){
 							//fourth sector
+							feature[7]++;
 						}
 					}
 				}
 			}
 			
+			feature[0] = feature[0]/(area/4);
+			feature[1] = feature[1]/(area/4);
+			feature[2] = feature[2]/(area/4);
+			feature[3] = feature[3]/(area/4);
+			feature[4] = feature[4]/(area/4);
+			feature[5] = feature[5]/(area/4);
+			feature[6] = feature[6]/(area/4);
+			feature[7] = feature[7]/(area/4);
 			
 			return feature;
 			
