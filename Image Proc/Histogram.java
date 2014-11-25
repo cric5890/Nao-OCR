@@ -92,21 +92,24 @@ public class Histogram {
 		}	else if ( dir.equals("both") ) {
 			long start = System.nanoTime();
 			initFindPlaque(width, height,2,2, image);
-			long end = (System.nanoTime() - start)/1000000000;
+			double end = (System.nanoTime() - start)/1000000000;
 			System.out.println("Took " + end + " seconds");
 			return;
 		}		
 		
 		array = removeModeAndLess(array);
-		/*for ( int i = 0; i < array.length; i++ ) {
-			System.out.println(array[i]);
-		}*/
+		float sum = 0.0f;
+		for ( int i = 0; i < array.length; i++ ) {
+			//System.out.println(array[i]);
+			sum += array[i];
+		}
+		float avg = sum / array.length;
 		//System.out.println("Printing Histogram");
 		for(int x=0;x<width;x++){
 			for(int y=0;y<height;y++){
 				//rgb = (histogram[x][y] << 16) + (histogram[x][y] << 8) + histogram[x][y];
 				rgb = new Color(255,255,255).getRGB();
-				if ( x < array.length && array[x] > 0.0f && dir.equals("horz") ) {
+				if ( x < array.length && array[x] > 0.0 && dir.equals("horz") ) {
 					//rgb = (histogram[x][y] << 16) + (histogram[x][y] << 8) + histogram[x][y];
 					rgb = new Color(histogram[x][y], histogram[x][y], histogram[x][y] ).getRGB();
 				}
@@ -153,7 +156,7 @@ public class Histogram {
 			array[y] = percent;
 		}
 		
-		return array;//removeModeAndLess(array);
+		return removeModeAndLess(array);
 	}
 	/**
 		Counting columns from left to right
@@ -183,7 +186,7 @@ public class Histogram {
 			array[x] = percent;
 		}
 		
-		return array;//removeModeAndLess(array);
+		return removeModeAndLess(array);
 	}
 	/**
 		Finds and sets all values to 0 that are equal to or less than the
@@ -242,22 +245,15 @@ public class Histogram {
 		return new_array;
 	}
 	
-	/**
-		Finds the plaque from horizontal and vertical histogram percent data
-
-		@param	horz_percent	The percentage of black pixels in each column
-		@param	vert_percent	The percentage of black pixels in each row
-	*/
-	public void findPlaque(float horz_percent[], float vert_percent[], int width, int height, BufferedImage image) {
-		ArrayList<int[]> horz_lines = new ArrayList<>();		//the inner itn arrays are len 2, {pos, length}
-		ArrayList<int[]> vert_lines = new ArrayList<>();
-		//find for horizontal
+	private ArrayList<int[]> findHorizontalLines(int width, float[] horz_percent, int line_threshhold) {
+		ArrayList<int[]> horz_lines = new ArrayList<>();
 		int start = 0;
 		int len = 0;
 		for ( int i = 0; i < width-1; i++ ) {
+			
 			if ( horz_percent[i] > 0.0 ) {// || horz_percent[i+1] > 0 ) {
 				len++;
-			} else if ( horz_percent[i] == 0.0 && len > 50 ) {
+			} else if ( horz_percent[i] == 0.0 && len > line_threshhold ) {
 				int container[] = new int[2];
 				container[0] = start;
 				container[1] = len;
@@ -269,13 +265,17 @@ public class Histogram {
 				len = 1;
 			}
 		}
-		//find for vertical
-		start = 0;
-		len = 0;
+		return horz_lines;
+	}
+	
+	private ArrayList<int[]> findVerticalLines(int height, float[] vert_percent, int line_threshhold) {
+		ArrayList<int[]> vert_lines = new ArrayList<>();
+		int start = 0;
+		int len = 0;
 		for ( int i = 0; i < height-1; i++ ) {
-			if ( vert_percent[i] > 0.0 ||  vert_percent[i+1] > 0.0) {
+			if ( vert_percent[i] > 0.0) {// ||  vert_percent[i+1] > 0.0) {
 				len++;
-			} else if ( vert_percent[i] == 0.0 && len > 50 ) {
+			} else if ( vert_percent[i] == 0.0 && len > line_threshhold ) {
 				int container[] = new int[2];
 				container[0] = start;
 				container[1] = len;
@@ -287,6 +287,18 @@ public class Histogram {
 				len = 1;
 			}
 		}
+		return vert_lines;
+	}
+	
+	/**
+		Finds the plaque from horizontal and vertical histogram percent data
+
+		@param	horz_percent	The percentage of black pixels in each column
+		@param	vert_percent	The percentage of black pixels in each row
+	*/
+	public void findPlaque(float horz_percent[], float vert_percent[], int width, int height, BufferedImage image) {
+		ArrayList<int[]> horz_lines = findHorizontalLines(width, horz_percent, 50);		//the inner itn arrays are len 2, {pos, length}
+		ArrayList<int[]> vert_lines = findVerticalLines(height, vert_percent, 50);
 		
 		//TESTING
 		
@@ -424,36 +436,56 @@ public class Histogram {
 		int right_filter[] = {	1, 0, -1,
 								2, 0, -2,
 								1, 0, -1 };
-		int high_pass_filter[] = {	-1, -1, -1,
-									-1, 8, -1,
-									-1, -1, -1 };
+		int high_pass_filter[] = {	-2, -2, -2,
+									-2, 16, -2,
+									-2, -2, -2 };
 		//horizontal
-		changed_image = FilterImage.filterImage(image, top_filter);
+		/*changed_image = FilterImage.filterImage(image, top_filter);
 		float horz_percent[] = histHoriz(width, height, changed_image);
+		
 		//vertical
 		changed_image = FilterImage.filterImage(image, left_filter);
 		float vert_percent[] = histVert(width, height, changed_image);
 		findPlaque(horz_percent, vert_percent, width, height, image);
 		
-		/*ImageManip room_nums = new ImageManip(this.changed_image);
+		ImageManip room_nums = new ImageManip(this.changed_image);
 		this.changed_image = room_nums.NAOPass(this.changed_image);
 		
-		int large_filter[] = {	1,1,1,1,1,1,1,1,1
-								1,1,1,1,1,1,1,1,1
-								1,1,1,1,1,1,1,1,1
-								1,1,1,1,1,1,1,1,1
-								1,1,1,1,-81,1,1,1,1
-								1,1,1,1,1,1,1,1,1
-								1,1,1,1,1,1,1,1,1
-								1,1,1,1,1,1,1,1,1
-								1,1,1,1,1,1,1,1,1
-		this.changed_image = FilterImage.filterImage(this.changed_image, top_filter);
-		horz_percent[] = histHoriz(width, height, changed_image);
+		*/
+		
+		this.changed_image = FilterImage.filterImage(image, high_pass_filter);
+		float horz_percent[] = histHoriz(width, height, changed_image);
 		
 		changed_image = FilterImage.filterImage(image, left_filter);
-		vert_percent[] = histVert(width, height, changed_image);*/
+		float vert_percent[] = histVert(width, height, changed_image);
+		
+		findNumbers(horz_percent, vert_percent, image);
 		
 		return;
+	}
+	
+	private void findNumbers(float horz_percent[], float vert_percent[], BufferedImage image) {
+		int width = image.getWidth();
+		int height = image.getHeight();
+		ArrayList<int[]> horz_lines = findHorizontalLines(width, horz_percent, 5);		//the inner int arrays are len 2, {pos, length}
+		ArrayList<int[]> vert_lines = findVerticalLines(height, vert_percent, 5);
+		
+		//System.out.println("=====Possible Positions=====");
+		for ( int i = 0; i < horz_lines.size(); i++ ) {
+			for ( int j = 0; j < vert_lines.size(); j++ ) {
+				//System.out.println("(" + horz_lines.get(i)[0] + ", " + vert_lines.get(j)[0] + ") width=" +horz_lines.get(i)[1] + " height=" + vert_lines.get(j)[1] );
+				BufferedImage temp_image = new BufferedImage(horz_lines.get(i)[1], vert_lines.get(j)[1], BufferedImage.TYPE_INT_RGB);
+				for ( int x = 0; x < horz_lines.get(i)[1]; x++ ) {
+					for ( int y = 0; y < vert_lines.get(j)[1]; y++ ) {
+						temp_image.setRGB(x,y, image.getRGB(horz_lines.get(i)[0]+x, vert_lines.get(j)[0]+y ) );
+					}
+				}
+				try {
+					File outputfile = new File("number" + i + "_" + j + ".png");
+					ImageIO.write(temp_image, "png", outputfile);
+				} catch (IOException ioe ) {}
+			}
+		}
 	}
 	
 //=================================================================================================
