@@ -71,10 +71,6 @@ public class ImageManip extends JPanel {
 		g3.drawImage(finalImage, 0, 0, null);  
 		g3.dispose();
 
-		//Displaying
-		JLabel picLabel3 = new JLabel(new ImageIcon(finalImage));
-		myArea.add(picLabel3);
-		myArea.validate();
 	}
 	
 	/**
@@ -304,14 +300,14 @@ public class ImageManip extends JPanel {
 		feature.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent evt) {
-				feature(myPic, myPic.getWidth(), myPic.getHeight());
+				feature(myPic);
 			}
 		});
 
 		NAO.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent evt) {
-				NAOPass(myPic, myPic.getWidth(), myPic.getHeight());
+				NAOPass(myPic);
 			}
 		});
 	}
