@@ -1,3 +1,5 @@
+import java.awt.Color;
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -223,6 +225,56 @@ import java.io.FileWriter;
 			}catch(Exception e){
 				e.printStackTrace();
 			}
+		}
+		
+		
+		public float[] extractFeature(BufferedImage img){
+			int width, height;
+			double pos_slope, neg_slope; 
+			
+			float feature[] = new float[8];
+			
+			height = img.getHeight();
+			width = img.getWidth();
+			
+			pos_slope = width/height;
+			neg_slope = -width/height;
+			
+			Color levels = null;
+			
+			for(int x=0; x < width; x++){
+				for(int y=0; y < height; y++){
+					levels = new Color(img.getRGB(x, y));
+					if(levels.getRed() < 10){
+						//Horz/Vert Slicing
+						if(x <= width/2 && y <= height/2){
+							//first sector
+							
+						}else if(x <= width/2 && y > height/2){
+							//second sector
+						}else if(x > width/2 && y <= height/2){
+							//third sector
+						}else if(x > width/2 && y > height/2){
+							//fourth sector
+						}
+						
+						//Diagonal Slicing
+						if(y > (neg_slope*x) && y > (pos_slope*x - height)){
+							//first sector
+						}else if(y > (neg_slope*x) && y <= (pos_slope*x - height)){
+							//second sector
+						}else if(y <= (neg_slope*x) && y <= (pos_slope*x - height)){
+							//third sector
+						}else if(y <= (neg_slope*x) && y > (pos_slope*x - height)){
+							//fourth sector
+						}
+					}
+				}
+			}
+			
+			
+			return feature;
+			
 		}
 		
 		
