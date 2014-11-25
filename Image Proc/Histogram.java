@@ -452,20 +452,42 @@ public class Histogram {
 		this.changed_image = room_nums.NAOPass(this.changed_image);
 		
 		*/
+		this.changed_image = image;
+		initFindNumbers(image);
 		
+		return;
+	}
+	
+	private void initFindNumbers(BufferedImage image) {
+		
+		float horz_percent[] = findHorzPercent(image, 2);
+		
+		float vert_percent[] = findVertPercent(image);
+		
+		findNumbers(horz_percent, vert_percent, image);
+	}
+	
+	private float[] findHorzPercent(BufferedImage image, int filter_value) {
+		int width = image.getWidth();
+		int height = image.getHeight();
+		int high_pass_filter[] = {	-filter_value, -filter_value, -filter_value,
+									-filter_value, filter_value*8, -filter_value,
+									-filter_value, -filter_value, -filter_value };
 		this.changed_image = FilterImage.filterImage(image, high_pass_filter);
 		float horz_percent[] = histHoriz(width, height, changed_image);
-		
+		return horz_percent;
+	}
+	
+	private float[] findVertPercent(BufferedImage image) {
+		int width = image.getWidth();
+		int height = image.getHeight();
 		int heavy_left_filter[] =  { 	-1, 0, 1,
 										-5, 0, 5,
 										-1, 0, 1 };
 		
 		changed_image = FilterImage.filterImage(image, heavy_left_filter);
 		float vert_percent[] = histVert(width, height, changed_image);
-		
-		findNumbers(horz_percent, vert_percent, image);
-		
-		return;
+		return vert_percent;
 	}
 	
 	private void findNumbers(float horz_percent[], float vert_percent[], BufferedImage image) {
@@ -473,6 +495,12 @@ public class Histogram {
 		int height = image.getHeight();
 		ArrayList<int[]> horz_lines = findHorizontalLines(width, horz_percent, 5);		//the inner int arrays are len 2, {pos, length}
 		ArrayList<int[]> vert_lines = findVerticalLines(height, vert_percent, 5);
+		int counter = 3;
+		//while ( horz_lines.size() != 4 ) {
+			System.out.println("horz lines counter: " + counter);
+			//horz_lines = findHorizontalLines(width, findHorzPercent(this.changed_image, counter), 5);
+			counter++;
+		//} 
 		
 		//System.out.println("=====Possible Positions=====");
 		for ( int i = 0; i < horz_lines.size(); i++ ) {
