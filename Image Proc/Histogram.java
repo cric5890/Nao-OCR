@@ -456,7 +456,11 @@ public class Histogram {
 		this.changed_image = FilterImage.filterImage(image, high_pass_filter);
 		float horz_percent[] = histHoriz(width, height, changed_image);
 		
-		changed_image = FilterImage.filterImage(image, left_filter);
+		int heavy_left_filter[] =  { 	-1, 0, 1,
+										-5, 0, 5,
+										-1, 0, 1 };
+		
+		changed_image = FilterImage.filterImage(image, heavy_left_filter);
 		float vert_percent[] = histVert(width, height, changed_image);
 		
 		findNumbers(horz_percent, vert_percent, image);
