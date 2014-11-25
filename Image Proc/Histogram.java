@@ -249,8 +249,8 @@ public class Histogram {
 		ArrayList<int[]> horz_lines = new ArrayList<>();
 		int start = 0;
 		int len = 0;
-		for ( int i = 0; i < width-1; i++ ) {
-			
+		for ( int i = 0; i < width; i++ ) {
+			//System.out.println(horz_percent[i]);
 			if ( horz_percent[i] > 0.0 ) {// || horz_percent[i+1] > 0 ) {
 				len++;
 			} else if ( horz_percent[i] == 0.0 && len > line_threshhold ) {
@@ -272,7 +272,7 @@ public class Histogram {
 		ArrayList<int[]> vert_lines = new ArrayList<>();
 		int start = 0;
 		int len = 0;
-		for ( int i = 0; i < height-1; i++ ) {
+		for ( int i = 0; i < height; i++ ) {
 			if ( vert_percent[i] > 0.0) {// ||  vert_percent[i+1] > 0.0) {
 				len++;
 			} else if ( vert_percent[i] == 0.0 && len > line_threshhold ) {
@@ -439,6 +439,7 @@ public class Histogram {
 		int high_pass_filter[] = {	-2, -2, -2,
 									-2, 16, -2,
 									-2, -2, -2 };
+		//KEEP THIS IN!
 		//horizontal
 		/*changed_image = FilterImage.filterImage(image, top_filter);
 		float horz_percent[] = histHoriz(width, height, changed_image);
@@ -473,8 +474,8 @@ public class Histogram {
 		int high_pass_filter[] = {	-filter_value, -filter_value, -filter_value,
 									-filter_value, filter_value*8, -filter_value,
 									-filter_value, -filter_value, -filter_value };
-		this.changed_image = FilterImage.filterImage(image, high_pass_filter);
-		float horz_percent[] = histHoriz(width, height, changed_image);
+		BufferedImage temp_img = FilterImage.filterImage(image, high_pass_filter);
+		float horz_percent[] = histHoriz(width, height, temp_img);
 		return horz_percent;
 	}
 	
@@ -485,8 +486,8 @@ public class Histogram {
 										-5, 0, 5,
 										-1, 0, 1 };
 		
-		changed_image = FilterImage.filterImage(image, heavy_left_filter);
-		float vert_percent[] = histVert(width, height, changed_image);
+		BufferedImage temp_img = FilterImage.filterImage(image, heavy_left_filter);
+		float vert_percent[] = histVert(width, height, temp_img);
 		return vert_percent;
 	}
 	
@@ -496,11 +497,14 @@ public class Histogram {
 		ArrayList<int[]> horz_lines = findHorizontalLines(width, horz_percent, 5);		//the inner int arrays are len 2, {pos, length}
 		ArrayList<int[]> vert_lines = findVerticalLines(height, vert_percent, 5);
 		int counter = 3;
-		//while ( horz_lines.size() != 4 ) {
+		while ( horz_lines.size() < 4 ) {
 			System.out.println("horz lines counter: " + counter);
-			//horz_lines = findHorizontalLines(width, findHorzPercent(this.changed_image, counter), 5);
+			horz_lines = findHorizontalLines(width, findHorzPercent(this.changed_image, counter), 5);
 			counter++;
-		//} 
+		} 
+		
+		BufferedImage images[] = new BufferedImage[horz_lines.size()*vert_lines.size()];
+		int images_counter = 0;
 		
 		//System.out.println("=====Possible Positions=====");
 		for ( int i = 0; i < horz_lines.size(); i++ ) {
@@ -513,11 +517,15 @@ public class Histogram {
 					}
 				}
 				try {
+					images[images_counter] = temp_image;
+					images_counter++;
 					File outputfile = new File("number" + i + "_" + j + ".png");
 					ImageIO.write(temp_image, "png", outputfile);
 				} catch (IOException ioe ) {}
 			}
 		}
+		
+		//send to number compare
 	}
 	
 //=================================================================================================
