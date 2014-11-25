@@ -1,3 +1,9 @@
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+
 /*
 	 * FeatureClusters
 	 * - Stores the cluster centers for feature vectors of characters 0-9
@@ -11,7 +17,8 @@
 		
 		public static void main(String[] args){
 			FeatureClusters clusters = new FeatureClusters();
-			clusters.TEST(40);
+			clusters.loadClusters();
+			clusters.printCenters();
 		}
 		
 		public FeatureClusters(){	
@@ -141,5 +148,90 @@
 			}			
 			return closest;
 		}
-
+		
+		public void saveClusters(){
+			try{
+			
+				File f = new File("./centers.csv");
+				
+				if(!f.exists()){
+					f.createNewFile();
+				}
+				
+				FileWriter fw = new FileWriter(f.getAbsolutePath());
+				BufferedWriter w = new BufferedWriter(fw);
+				
+				float center[] = null;
+				String csv = null;
+				
+				for(int i=0; i < cluster_centers.length; i++){
+					center = cluster_centers[i];
+					csv = 	center[0]+","
+							+center[1]+","
+							+center[2]+","
+							+center[3]+","
+							+center[4]+","
+							+center[5]+","
+							+center[6]+","
+							+center[7]+"/n";
+					w.write(csv);
+				}
+				
+				w.close();
+				
+			}catch(Exception e){
+				e.printStackTrace();
+			}
+		}
+		
+		public void loadClusters(){
+			try{
+				BufferedReader r = new BufferedReader(new FileReader("c:/centers.csv"));
+				
+				float center[] = null;
+				
+				String line = r.readLine();
+				String csv[] = null;
+				
+				
+				int index = 0;
+				
+				while(line != null && index < 10){
+					csv = line.split(",");
+					if(csv.length == FEATURE_LENGTH){
+						center = new float[8];
+						center[0] = Float.parseFloat(csv[0]);
+						center[1] = Float.parseFloat(csv[1]);
+						center[2] = Float.parseFloat(csv[2]);
+						center[3] = Float.parseFloat(csv[3]);
+						center[4] = Float.parseFloat(csv[4]);
+						center[5] = Float.parseFloat(csv[5]);
+						center[6] = Float.parseFloat(csv[6]);
+						center[7] = Float.parseFloat(csv[7]);
+						
+						initClusterCenter(index,center);
+						line = r.readLine();
+						index++;
+					}else{
+						//error
+					}
+					
+				}
+				
+				r.close();
+				
+			}catch(Exception e){
+				e.printStackTrace();
+			}
+		}
+		
+		
+		public void printCenters(){
+			float center[] = null;
+			for(int i=0; i<cluster_centers.length; i++){
+				center = cluster_centers[i];
+				System.out.println("["+center[0]+","+center[1]+","+center[2]+","+center[3]+","+center[4]+","+center[5]+","+center[6]+","+center[7]+"]");
+			}
+		}
+		
 	}
