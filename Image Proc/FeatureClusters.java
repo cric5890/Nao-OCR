@@ -154,7 +154,7 @@ import java.io.FileWriter;
 		public void saveClusters(){
 			try{
 			
-				File f = new File("./centers.csv");
+				File f = new File("c:/centers.csv");
 				
 				if(!f.exists()){
 					f.createNewFile();
@@ -175,7 +175,7 @@ import java.io.FileWriter;
 							+center[4]+","
 							+center[5]+","
 							+center[6]+","
-							+center[7]+"/n";
+							+center[7]+"\n";
 					w.write(csv);
 				}
 				
@@ -229,8 +229,8 @@ import java.io.FileWriter;
 		
 		
 		public float[] extractFeature(BufferedImage img){
-			int width, height,area;
-			double pos_slope, neg_slope; 
+			float width, height,area;
+			float pos_slope, neg_slope; 
 			
 			float feature[] = new float[8];
 			
@@ -238,8 +238,12 @@ import java.io.FileWriter;
 			width = img.getWidth();
 			area = width*height;
 			
+			
+			
 			pos_slope = height/width;
 			neg_slope = -height/width;
+			
+			System.out.println("H: "+height+" W: "+width+" A: "+area+" PS: "+pos_slope+" NS: "+neg_slope);
 			
 			Color levels = null;
 			

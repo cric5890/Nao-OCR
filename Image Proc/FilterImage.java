@@ -19,10 +19,13 @@ public class FilterImage {
     JPanel matrix_panel = new JPanel();
     JTextField resize_text_field = null;
     JPanel image_panel = new JPanel();
+    JTextField center_number_field = null;
+    
+    FeatureClusters features = new FeatureClusters();
 	
 	private Histogram histogram;
 	
-	/*private int filter[] = 
+	/*private int feature_filter[] = 
 	{
 		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
 		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
@@ -50,26 +53,25 @@ public class FilterImage {
 		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
 		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
 	};*/
-    /*
-	private int filter[] = {
-		1,1,1,1,1,1,1,1,1,
-		1,1,1,1,1,1,1,1,1,
-		1,1,1,1,1,1,1,1,1,
-		1,1,1,1,1,1,1,1,1,
-		1,1,1,1,-80,1,1,1,1,
-		1,1,1,1,1,1,1,1,1,
-		1,1,1,1,1,1,1,1,1,
-		1,1,1,1,1,1,1,1,1,
-		1,1,1,1,1,1,1,1,1,
+    
+	private int feature_filter[] = {
+		1,1,1,1,1,
+		1,1,1,1,1,
+		1,1,-24,1,1,
+		1,1,1,1,1,
+		1,1,1,1,1,
 	};
-    */
+    
   public static void main(String[] args) throws Exception
   {
     new FilterImage();
+    
+    
   }
 
   public FilterImage() throws Exception
   {
+	
     SwingUtilities.invokeLater(new Runnable()
     {
       public void run()
@@ -88,10 +90,42 @@ public class FilterImage {
         imageFrame.pack();
         imageFrame.setLocationRelativeTo(null);
         imageFrame.setVisible(true);
+        
+        features.loadClusters();
+        System.out.println("Centers Loaded");
       }
     });
+    
   }
  
+  
+  public void addFeatureCenter(){
+	  changed_image = filterImage(image, feature_filter);
+	  redrawImageFrame();
+	  float[] center = features.extractFeature(changed_image);
+	  int center_num = Integer.parseInt(center_number_field.getText());
+	  features.includeFeature(center_num, center);
+	  features.saveClusters();
+  }
+  
+  public void setFeatureCenter(){
+	  changed_image = filterImage(image, feature_filter);
+	  redrawImageFrame();
+	  float[] center = features.extractFeature(changed_image);
+	  int center_num = Integer.parseInt(center_number_field.getText());
+	  features.initClusterCenter(center_num, center);
+	  features.saveClusters();
+  }
+  
+  public void getFeature(){
+	  //convertToGrayScale(image);
+	  changed_image = filterImage(image, feature_filter);
+	  redrawImageFrame();
+	  float[] center = features.extractFeature(changed_image);
+	  System.out.println("["+center[0]+","+center[1]+","+center[2]+","+center[3]+","+center[4]+","+center[5]+","+center[6]+","+center[7]+"]");
+	  int closest = features.getClosestCenter(center);
+	  System.out.println("Closest Center: "+closest);
+  }
   
   public File openFile(){
 		final JFileChooser fc = new JFileChooser();
@@ -115,6 +149,8 @@ public class FilterImage {
 	  matrix_size_text_fieled = new JTextField();
 	  JButton matrix_size_apply = new JButton("Apply");
 	  matrix_size_apply.addActionListener(new MatrixSizeListener());
+	  
+	  
 	  
 	  JPanel matrix_size_panel = new JPanel(new GridLayout(1, 3));
 	  matrix_size_panel.add(matrix_size_label);
@@ -140,16 +176,50 @@ public class FilterImage {
 	  JButton vert_hist_btn = new JButton("Vert Histogram");
 	  vert_hist_btn.addActionListener(new VertHistListener());
 	  
-	  resize_outer_panel.add(resize_inner_panel, BorderLayout.NORTH);
+	  JButton new_img_btn = new JButton("Load New Image");
+	  new_img_btn.addActionListener(new NewImageListener());
 	  
+	  JButton get_feature_btn = new JButton("Get Feature");
+	  get_feature_btn.addActionListener(new GetFeatureListener());
+	  
+	  JLabel center_num_label = new JLabel("Center #:");
+	  
+	  center_number_field = new JTextField();
+
+	  JButton set_center_btn = new JButton("Set Center");
+	  set_center_btn.addActionListener(new SetCenterListener());
+	  
+	  JButton add_center_btn = new JButton("Add to Center");
+	  add_center_btn.addActionListener(new AddCenterListener());
+	  
+	  
+	  JPanel feature_center_panel = new JPanel(new GridLayout(1,2));
+	  
+	  JPanel features_panel = new JPanel(new BorderLayout());
+	  
+	  JPanel buttons_panel = new JPanel(new BorderLayout());
+	  
+	  feature_center_panel.add(center_num_label);
+	  feature_center_panel.add(center_number_field);
+	  
+	  features_panel.add(feature_center_panel,BorderLayout.NORTH);
+	  features_panel.add(get_feature_btn,BorderLayout.CENTER);
+	  features_panel.add(set_center_btn,BorderLayout.EAST); 
+	  features_panel.add(add_center_btn,BorderLayout.SOUTH);
+	  
+	  resize_outer_panel.add(resize_inner_panel, BorderLayout.NORTH);
 	  resize_outer_panel.add(both_hist_btn, BorderLayout.SOUTH);
 	  resize_outer_panel.add(horz_hist_btn, BorderLayout.EAST);
 	  resize_outer_panel.add(vert_hist_btn, BorderLayout.CENTER);
 	  
 	  
+	  buttons_panel.add(resize_outer_panel, BorderLayout.NORTH);
+	  buttons_panel.add(new_img_btn, BorderLayout.CENTER);
+	  buttons_panel.add(features_panel, BorderLayout.SOUTH);
+	  
 	  editorFrame.getContentPane().add(matrix_size_panel, BorderLayout.NORTH);
 	  editorFrame.getContentPane().add(matrix_panel, BorderLayout.CENTER);
-	  editorFrame.getContentPane().add(resize_outer_panel, BorderLayout.SOUTH);
+	  editorFrame.getContentPane().add(buttons_panel, BorderLayout.SOUTH);
   }
   /**
    * imageFrameLayout 	-	creates a layout for the frame with the images
@@ -522,6 +592,41 @@ public class FilterImage {
 			histogram = new Histogram("both", changed_image);
 			changed_image = histogram.getImage();
 			redrawImageFrame();
+		}
+	}
+	
+	public class NewImageListener implements ActionListener {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			try{
+				image = ImageIO.read(openFile());
+				changed_image = image;
+				redrawImageFrame();
+			}catch(Exception err){
+				err.printStackTrace();
+				System.exit(0);
+			}
+		}
+	}
+	
+	public class GetFeatureListener implements ActionListener {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			getFeature();
+		}
+	}
+	
+	public class SetCenterListener implements ActionListener {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			setFeatureCenter();
+		}
+	}
+	
+	public class AddCenterListener implements ActionListener {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			addFeatureCenter();
 		}
 	}
 }
