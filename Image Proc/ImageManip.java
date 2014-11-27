@@ -136,11 +136,11 @@ public class ImageManip extends JPanel {
 		int xPos = 0;
 		//Filters
 		int[] array1 = {1, 8, 1, 0, 0, 0, -1, -8, -1};
-		int[] array2 = {-1, 0, 1, -8, 0, 8, -1, 0, 1};
+		int[] array2 = {-2, 0, 2, -16, 0, 16, -2, 0, 2};
 		int[] array3 = {1,4,1,4,-19,4,1,4,1};//tester
 		
 		//Filter the Image, create a histogram, rotate if necessary
-		BufferedImage vertImage = FilterImage.filterImage(originalImage, array1);
+		BufferedImage vertImage = FilterImage.filterImage(originalImage, array2);
 		histogram = new Histogram("vert", vertImage);
 		float vertMax = maxOfHist(Histogram.histVert(vertImage.getWidth(),vertImage.getHeight(),vertImage));
 		if (vertMax <  25.0){
@@ -149,12 +149,13 @@ public class ImageManip extends JPanel {
 		}
 		
 		//Setting up the bounds for image traversal
-		int yMid = skipToBlack( histogram.getImage(), histogram.getImage().getHeight(), 15, "V");
-		int[] yArray = setParams(yMid,histogram.getImage().getHeight(),30);//Magic
-		if(yArray[0] == 0){ yArray[1] = 60; }
+		int yMid = skipToBlack( histogram.getImage(), histogram.getImage().getHeight(), 10, "V");
+		System.out.println(yMid);
+		int[] yArray = setParams(yMid,histogram.getImage().getHeight(),24);//Magic
+		if(yArray[0] == 0){ yArray[1] = 48; }
 		
 		//Loading into the new image
-		BufferedImage numStrip = new BufferedImage(width, 62, BufferedImage.TYPE_BYTE_GRAY);
+		BufferedImage numStrip = new BufferedImage(width, 48, BufferedImage.TYPE_BYTE_GRAY);
 		for(int x = 0; x < width; x++){
 			int yNew = yArray[0];
 			for(int y = 0; y < (yArray[1]-yArray[0]); y++){
@@ -162,8 +163,8 @@ public class ImageManip extends JPanel {
 				numStrip.setRGB(x, y, c.getRGB());
 				yNew ++;
 			}
-		}
-		
+		}		
+		/*
 		//Filter the Image, create a histogram
 		BufferedImage horzImage = FilterImage.filterImage(numStrip, array2);
 		histogram = new Histogram("horz", horzImage);
@@ -174,15 +175,16 @@ public class ImageManip extends JPanel {
 		int[] xArray = setParams(xMid,histogram.getImage().getWidth(),xBound/2);
 		
 		//Loading into the new image
-		BufferedImage nums = new BufferedImage(xBound, 60, BufferedImage.TYPE_BYTE_GRAY);
+		BufferedImage nums = new BufferedImage(xBound, 48, BufferedImage.TYPE_BYTE_GRAY);
 		for(int x = xArray[0]; x < xArray[1]; x++){
-			for(int y = 0; y < 60; y++){
+			for(int y = 0; y < 48; y++){
 				Color c= new Color(numStrip.getRGB(x, y), true);
 				nums.setRGB(xPos, y, c.getRGB());
 			}
 			xPos++;
-		}
-		return nums;
+		}*/
+		
+		return numStrip;
 	}
 	
 	/**
@@ -234,7 +236,7 @@ public class ImageManip extends JPanel {
 		}
 		Arrays.sort(myArray);
 		float max = myArray[myArray.length-1];
-		//int location = Arrays.asList(intArray).indexOf(max);
+		//System.out.println("Max index: " + Arrays.asList(Array).indexOf(max));
 		return max;
 	}
 	
@@ -267,7 +269,7 @@ public class ImageManip extends JPanel {
 		}
 
 		//vertical histogram
-		else if(dir =="V"){
+		else if(dir =="V"){		
 			while (isBlack == false && i < max - 1){ 
 				if( new Color(image.getRGB(thresh, i)).getRed() == 0){ //THRESHOLD
 					isBlack = true;
