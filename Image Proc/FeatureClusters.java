@@ -115,6 +115,8 @@ import java.io.FileWriter;
 		public int getClosestCenter(float[] feature){
 			int closest = -1;
 			
+			float distances[] = new float[10];
+			
 			if(feature.length == FEATURE_LENGTH){
 				float dist, minDist;
 				float center[] = null;
@@ -129,6 +131,7 @@ import java.io.FileWriter;
 											Math.pow(feature[7]-center[7],2));
 				minDist = dist;
 				closest = 0;
+				distances[0] = dist;
 				for(int i=1; i<cluster_centers.length; i++){
 					center = cluster_centers[i];
 					dist = (float) Math.sqrt(	Math.pow(feature[0]-center[0],2)+
@@ -139,15 +142,22 @@ import java.io.FileWriter;
 												Math.pow(feature[5]-center[5],2)+
 												Math.pow(feature[6]-center[6],2)+
 												Math.pow(feature[7]-center[7],2));
+					distances[i] = dist;
 					if(dist < minDist){
 						minDist = dist;
 						closest = i;
 					}
 				}
 				
+				if(minDist > 0.20){
+					closest = -1;
+				}
+				
+				System.out.println("["+distances[0]+","+distances[1]+","+distances[2]+","+distances[3]+","+distances[4]+","+distances[5]+","+distances[6]+","+distances[7]+","+distances[8]+","+distances[9]+"]");
+				
 			}else{
 				System.out.println("Invalid feature: length does not math FEATURE_LENGTH");
-			}			
+			}
 			return closest;
 		}
 		
@@ -243,7 +253,7 @@ import java.io.FileWriter;
 			pos_slope = height/width;
 			neg_slope = -height/width;
 			
-			System.out.println("H: "+height+" W: "+width+" A: "+area+" PS: "+pos_slope+" NS: "+neg_slope);
+			//System.out.println("H: "+height+" W: "+width+" A: "+area+" PS: "+pos_slope+" NS: "+neg_slope);
 			
 			Color levels = null;
 			

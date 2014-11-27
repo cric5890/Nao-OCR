@@ -25,7 +25,7 @@ public class FilterImage {
 	
 	private Histogram histogram;
 	
-	/*private int feature_filter[] = 
+	private int feature_filter[] = 
 	{
 		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
 		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
@@ -52,15 +52,15 @@ public class FilterImage {
 		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
 		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
 		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-	};*/
+	};
     
-	private int feature_filter[] = {
+	/*private int feature_filter[] = {
 		1,1,1,1,1,
 		1,1,1,1,1,
 		1,1,-24,1,1,
 		1,1,1,1,1,
 		1,1,1,1,1,
-	};
+	};*/
     
   public static void main(String[] args) throws Exception
   {
@@ -98,10 +98,15 @@ public class FilterImage {
     
   }
  
+  public void scaleForFeatures(){
+	  while(changed_image.getWidth() < 50 || changed_image.getHeight() < 50){
+		  resizeImage(changed_image, 2);
+	  }
+  }
+  
+  
   
   public void addFeatureCenter(){
-	  changed_image = filterImage(image, feature_filter);
-	  redrawImageFrame();
 	  float[] center = features.extractFeature(changed_image);
 	  int center_num = Integer.parseInt(center_number_field.getText());
 	  features.includeFeature(center_num, center);
@@ -109,8 +114,6 @@ public class FilterImage {
   }
   
   public void setFeatureCenter(){
-	  changed_image = filterImage(image, feature_filter);
-	  redrawImageFrame();
 	  float[] center = features.extractFeature(changed_image);
 	  int center_num = Integer.parseInt(center_number_field.getText());
 	  features.initClusterCenter(center_num, center);
@@ -119,10 +122,11 @@ public class FilterImage {
   
   public void getFeature(){
 	  //convertToGrayScale(image);
-	  changed_image = filterImage(image, feature_filter);
+	  scaleForFeatures();
+	  changed_image = filterImage(changed_image, feature_filter);
 	  redrawImageFrame();
 	  float[] center = features.extractFeature(changed_image);
-	  System.out.println("["+center[0]+","+center[1]+","+center[2]+","+center[3]+","+center[4]+","+center[5]+","+center[6]+","+center[7]+"]");
+	  //System.out.println("["+center[0]+","+center[1]+","+center[2]+","+center[3]+","+center[4]+","+center[5]+","+center[6]+","+center[7]+"]");
 	  int closest = features.getClosestCenter(center);
 	  System.out.println("Closest Center: "+closest);
   }
@@ -388,6 +392,77 @@ public class FilterImage {
 	/**
 		Counting rows from top to bottom
 	*/
+	public void resizeImage(BufferedImage image, double resize){
+		try {
+			int[] old_rgb = image.getRGB(0,0, image.getWidth(), image.getHeight(), null, 0, image.getWidth());
+			
+			int width = (int)(image.getWidth() * resize);		
+			int height = (int)(image.getHeight() * resize);		
+			int width_division = image.getWidth()/width;		
+			int height_division = image.getHeight()/height;		
+			
+			int[] new_rgb = new int[width*height];
+	
+			System.out.println("Resized: " + width + "x" + height);
+			
+			if ( resize > 1 ) {
+				for ( int x = 0; x < image.getWidth(); x++ ) {
+					for ( int y = 0; y < image.getHeight(); y++ ) {
+						new_rgb = growImage(old_rgb, resize, x, y, width, height, new_rgb, image.getWidth());
+					}
+				}
+			} else if ( resize > 0 ) {
+				for ( int x = 0; x < width; x++ ) {
+					for ( int y = 0; y < height; y++ ) {
+						new_rgb[x+y*width] =  averageShrink(old_rgb, width_division, height_division, x, y, image.getWidth(), image.getHeight());
+					}
+				}
+			}
+			changed_image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+			changed_image.setRGB(0, 0, width, height, new_rgb, 0, width );
+			redrawImageFrame();
+		} catch (Exception e) {
+			System.out.println("Error on Resize input: " + e.getMessage() );
+		}
+	}
+	private int[] growImage(int[] rgb, double resize, int pos_x, int pos_y, int width, int height, int[] new_rgb, int image_width ) {
+		Color c = new Color(rgb[pos_x + pos_y*image_width]);
+		int[] rgb_copy = new_rgb;
+		for ( int x = pos_x*(int)resize; x < pos_x*(int)resize + (int)resize; x++ ) {
+			for ( int y = pos_y*width*(int)resize; y < pos_y*width*(int)resize + width*(int)resize; y+= width ) {
+				rgb_copy[x+y] = c.getRGB(); 
+			}
+		}
+		
+		return rgb_copy;
+	}
+	/**
+	 * 	averageShrink 	- 	a method to shrink the image with an averaged sum
+	 * 
+	 * @param rgb		- 	the colour values
+	 * @param resize	- 	the amount the image will be resized
+	 * @param pos_x		-	start position in the x
+	 * @param pos_y		-	start position in the y
+	 * @param width		-	width of the new image
+	 * @param height	-	height of the new image
+	 * @param new_rgb	-	the new image
+	 * @param image_width	-	the old image width
+	 * @return
+	 */
+	private int averageShrink(int[] rgb, int width_div, int height_div, int pos_x, int pos_y, int image_width, int image_height) {
+		int sum = 0;
+		for ( int x = pos_x*width_div; x < pos_x*width_div + width_div; x++ ) {
+			for ( int y = pos_y*image_width*height_div; y < pos_y*image_width*height_div + image_width*height_div; y+= image_width ) {
+				Color c = new Color(rgb[x+y]);
+				sum += c.getRed();
+			}
+		}
+		
+		int temp = sum/(width_div*height_div);
+		Color c = new Color(temp,temp,temp);
+
+		return c.getRGB();
+	}
 	
 	
 	
