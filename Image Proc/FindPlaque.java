@@ -15,6 +15,7 @@ public class FindPlaque {
 	private ArrayList<Color> values = new ArrayList<>();
 	private ArrayList<Integer> counts = new ArrayList<>();
 	public ArrayList<int[]> positions = new ArrayList<>();	//{x,y}
+	public int[] center;
 	
 	/*public static void main(String[] args) {
 		try {
@@ -86,5 +87,6 @@ public class FindPlaque {
 		}
 		int value[] = {sum_x/array.size(),sum_y/array.size()};
 		System.out.println("Center point of plaque is (" + value[0] + "," + value[1] + ")");
+		this.center = value;
 	}
 }
