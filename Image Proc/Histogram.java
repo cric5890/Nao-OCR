@@ -12,10 +12,40 @@ import javax.swing.*;
 public class Histogram {
 	
 	private BufferedImage changed_image;
+	private BufferedImage original_image;
 	
+	private int feature_filter[] = 
+	{
+		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+		1,1,1,1,1,1,1,1,1,1,1,1,-624,1,1,1,1,1,1,1,1,1,1,1,1,
+		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	};
 	
 	public Histogram(String dir, BufferedImage image){		
 		int width,height,count=0,rgb = 0,grey;
+		this.original_image = image;
 		float array[] = new float[1];
 		width = image.getWidth();
 		height = image.getHeight();
@@ -91,7 +121,7 @@ public class Histogram {
 			}
 		}	else if ( dir.equals("both") ) {
 			long start = System.nanoTime();
-			initFindPlaque(width, height,2,2, image);
+			initFindPlaque(width, height,3,3, image,true);
 			double end = (System.nanoTime() - start)/1000000000;
 			System.out.println("Took " + end + " seconds");
 			return;
@@ -313,23 +343,23 @@ public class Histogram {
 			System.out.println("pos= " + container[0] + " length= " + container[1] );
 		}
 		
-		/*if ( horz_lines.size() != 1 ) {
+		if ( horz_lines.size() == 0 ) {
 			if ( top_center_value > 9 ) {
 				System.out.println("Horz looped 10 times, exiting");
-				System.exit(-1);
+				//System.exit(-1);
 			}
 			System.out.println("running horz again");
-			initFindPlaque(width, height,1,0);
+			initFindPlaque(width, height,1,0, this.original_image, false);
 			return;
-		} else if ( vert_lines.size() != 1 ) {
+		} else if ( vert_lines.size() == 0 ) {
 			if ( left_center_value > 9 ) {
 				System.out.println("Vert looped 10 times, exiting");
-				System.exit(-1);
+				//System.exit(-1);
 			}
 			System.out.println("running vert again");
-			initFindPlaque(width, height,0,1);
+			initFindPlaque(width, height,0,1, this.original_image, false);
 			return;
-		}*/
+		}
 		
 		if ( horz_lines.size() > 0 && vert_lines.size() > 0 ) {
 			int array_pos[] = compareLinesToColorDB(horz_lines, vert_lines, image);
@@ -356,8 +386,10 @@ public class Histogram {
 			changed_image.setRGB(0, 0, plaque_width, plaque_height, new_rgb, 0, plaque_width );
 			//redrawImageFrame();
 		} else {
+			
 			System.out.println(	"ERROR: Could not find plaque, found " + horz_lines.size() + 
 								" horizontal lines and found " + vert_lines.size() + " vertical lines.");
+		
 		}
 	}
 	/**
@@ -368,10 +400,25 @@ public class Histogram {
 	private int[] compareLinesToColorDB(ArrayList<int[]> horz_lines, ArrayList<int[]> vert_lines, BufferedImage image ) {
 		FindPlaque fp = new FindPlaque(image);
 		//fp.printCounts();
-		int horz_count[] = new int[horz_lines.size()];
-		int vert_count[] = new int[vert_lines.size()];
+		//int horz_count[] = new int[horz_lines.size()];
+		//int vert_count[] = new int[vert_lines.size()];
 		
+		int center[] = fp.center;
+		int horz_index = 0;
 		for ( int i = 0; i < horz_lines.size(); i++ ) {
+			if ( center[0] >  horz_lines.get(i)[0] && center[0] < horz_lines.get(i)[0] + horz_lines.get(i)[1] ) {
+				horz_index = i;
+				break;
+			}
+		}
+		int vert_index = 0;
+		for ( int i = 0; i < vert_lines.size(); i++ ) {
+			if ( center[1] >  vert_lines.get(i)[0] && center[0] < vert_lines.get(i)[1] + vert_lines.get(i)[1] ) {
+				vert_index = i;
+				break;
+			}
+		}
+		/*for ( int i = 0; i < horz_lines.size(); i++ ) {
 			horz_count[i] = 0;
 			for ( int j = 0; j < fp.positions.size(); j++ ) {
 				if ( fp.positions.get(j)[0] > horz_lines.get(i)[0] - horz_lines.get(i)[1] && fp.positions.get(j)[0] < horz_lines.get(i)[0] + horz_lines.get(i)[1] ) {
@@ -392,6 +439,7 @@ public class Histogram {
 		int horz_index = 0;
 		int horz_max = 0;
 		for ( int i = 0; i < horz_count.length; i++ ) {
+			//System.out.println("horz_count["+i+"] =" + horz_count[i]);
 			if ( horz_max < horz_count[i] ) {
 				horz_max = horz_count[i];
 				horz_index = i;
@@ -400,12 +448,14 @@ public class Histogram {
 		int vert_index = 0;
 		int vert_max = 0;
 		for ( int i = 0; i < vert_count.length; i++ ) {
+			System.out.println("vert_count["+i+"] =" + vert_count[i]);
 			if ( vert_max < vert_count[i] ) {
 				vert_max = vert_count[i];
 				vert_index = i;
 			}
 		}
 		//System.out.println("Max: " + horz_max + "," + vert_max);
+		*/
 		int array[] = {horz_index, vert_index};
 		return array;
 	}
@@ -424,7 +474,7 @@ public class Histogram {
 			incr_left	-	used to increase the weight on the center value of vert filter
 			image		-	the image to be filtered
 	*/
-	public void initFindPlaque(int width, int height, int incr_top, int incr_left, BufferedImage image ) {
+	public void initFindPlaque(int width, int height, int incr_top, int incr_left, BufferedImage image, boolean first ) {
 		top_center_value+=incr_top;
 		left_center_value+=incr_left;
 		int top_filter[] = {	-1,-top_center_value,-1,
@@ -441,7 +491,7 @@ public class Histogram {
 									-2, -2, -2 };
 		//KEEP THIS IN!
 		//horizontal
-		/*changed_image = FilterImage.filterImage(image, top_filter);
+		changed_image = FilterImage.filterImage(image, top_filter);
 		float horz_percent[] = histHoriz(width, height, changed_image);
 		
 		//vertical
@@ -449,23 +499,41 @@ public class Histogram {
 		float vert_percent[] = histVert(width, height, changed_image);
 		findPlaque(horz_percent, vert_percent, width, height, image);
 		
-		ImageManip room_nums = new ImageManip(this.changed_image);
-		this.changed_image = room_nums.NAOPass(this.changed_image);
+		//BufferedImage images[] = initZoomNumbers(this.changed_image);
 		
-		*/
-		this.changed_image = image;
-		initFindNumbers(image);
+		if ( first ) {
+			ImageManip room_nums = new ImageManip(this.changed_image);
+			this.changed_image = room_nums.NAOPass(this.changed_image);
+			BufferedImage[] num_images = initFindNumbers(this.changed_image, 0);
+			
+			FeatureClusters fc = new FeatureClusters();
+			fc.loadClusters();
+			
+			for ( int i = 0 ; i < num_images.length; i++ ) {
+				num_images[i] = FilterImage.scaleForFeatures(num_images[i]);
+				float array[] = fc.extractFeature(FilterImage.filterImage(num_images[i],feature_filter));
+				int number = fc.getClosestCenter(array);
+				System.out.println("Found: " + number);
+			}
+			
+		}
+		//this.changed_image = image;
+		//for ( int i = 0; i < images.length; i++ ) {
+		
+		//}
 		
 		return;
 	}
 	
-	private void initFindNumbers(BufferedImage image) {
+	private BufferedImage[] initFindNumbers(BufferedImage image, int pos) {
 		
 		float horz_percent[] = findHorzPercent(image, 2);
+		int heavy_left_filter[] =  { 	-1, 0, 1,
+										-5, 0, 5,
+										-1, 0, 1 };
+		float vert_percent[] = findVertPercent(image,heavy_left_filter);
 		
-		float vert_percent[] = findVertPercent(image);
-		
-		findNumbers(horz_percent, vert_percent, image);
+		return findNumbers(horz_percent, vert_percent, image, pos);
 	}
 	
 	private float[] findHorzPercent(BufferedImage image, int filter_value) {
@@ -479,29 +547,37 @@ public class Histogram {
 		return horz_percent;
 	}
 	
-	private float[] findVertPercent(BufferedImage image) {
+	private float[] findVertPercent(BufferedImage image, int filter[]) {
 		int width = image.getWidth();
 		int height = image.getHeight();
-		int heavy_left_filter[] =  { 	-1, 0, 1,
+		/*int heavy_left_filter[] =  { 	-1, 0, 1,
 										-5, 0, 5,
 										-1, 0, 1 };
-		
-		BufferedImage temp_img = FilterImage.filterImage(image, heavy_left_filter);
+		*/
+		BufferedImage temp_img = FilterImage.filterImage(image, filter);
 		float vert_percent[] = histVert(width, height, temp_img);
 		return vert_percent;
 	}
 	
-	private void findNumbers(float horz_percent[], float vert_percent[], BufferedImage image) {
+	private BufferedImage[] findNumbers(float horz_percent[], float vert_percent[], BufferedImage image, int pos) {
 		int width = image.getWidth();
 		int height = image.getHeight();
 		ArrayList<int[]> horz_lines = findHorizontalLines(width, horz_percent, 5);		//the inner int arrays are len 2, {pos, length}
 		ArrayList<int[]> vert_lines = findVerticalLines(height, vert_percent, 5);
 		int counter = 3;
-		while ( horz_lines.size() < 4 ) {
+		
+		System.out.println(horz_lines.size() + " x " + vert_lines.size());
+		
+		while ( horz_lines.size() < 4 && counter < 10) {
 			System.out.println("horz lines counter: " + counter);
-			horz_lines = findHorizontalLines(width, findHorzPercent(this.changed_image, counter), 5);
+			horz_lines = findHorizontalLines(width, findHorzPercent(image, counter), 5);
 			counter++;
 		} 
+		
+		if ( vert_lines.size() == 0 ) {
+			int array[] = {0, height-1};
+			vert_lines.add(array);
+		}
 		
 		BufferedImage images[] = new BufferedImage[horz_lines.size()*vert_lines.size()];
 		int images_counter = 0;
@@ -509,7 +585,7 @@ public class Histogram {
 		//System.out.println("=====Possible Positions=====");
 		for ( int i = 0; i < horz_lines.size(); i++ ) {
 			for ( int j = 0; j < vert_lines.size(); j++ ) {
-				//System.out.println("(" + horz_lines.get(i)[0] + ", " + vert_lines.get(j)[0] + ") width=" +horz_lines.get(i)[1] + " height=" + vert_lines.get(j)[1] );
+				System.out.println("(" + horz_lines.get(i)[0] + ", " + vert_lines.get(j)[0] + ") width=" +horz_lines.get(i)[1] + " height=" + vert_lines.get(j)[1] );
 				BufferedImage temp_image = new BufferedImage(horz_lines.get(i)[1], vert_lines.get(j)[1], BufferedImage.TYPE_INT_RGB);
 				for ( int x = 0; x < horz_lines.get(i)[1]; x++ ) {
 					for ( int y = 0; y < vert_lines.get(j)[1]; y++ ) {
@@ -519,13 +595,41 @@ public class Histogram {
 				try {
 					images[images_counter] = temp_image;
 					images_counter++;
-					File outputfile = new File("number" + i + "_" + j + ".png");
+					File outputfile = new File(pos + "number" + i + "_" + j + ".png");
 					ImageIO.write(temp_image, "png", outputfile);
 				} catch (IOException ioe ) {}
 			}
 		}
 		
 		//send to number compare
+		return images;
+	}
+	
+	private BufferedImage[] initZoomNumbers(BufferedImage image) {
+		int width = image.getWidth();
+		int height = image.getHeight();
+		//ArrayList<int[]> horz_lines = findHorizontalLines(width, horz_percent, 5);		//the inner int arrays are len 2, {pos, length}
+		int[] filter = {-1, 0, 1, -2, 0, 2, -1, 0, 1};
+		ArrayList<int[]> vert_lines = findVerticalLines(height, findVertPercent(image, filter), 5);
+		BufferedImage images[] = new BufferedImage[vert_lines.size()];
+		int images_counter = 0;
+		for ( int j = 0; j < vert_lines.size(); j++ ) {
+				System.out.println("Vertical Lines: " + vert_lines.get(j)[0] + " down and length " + vert_lines.get(j)[1] );
+				BufferedImage temp_image = new BufferedImage(width, vert_lines.get(j)[1], BufferedImage.TYPE_INT_RGB);
+				for ( int x = 0; x < width; x++ ) {
+					for ( int y = 0; y < vert_lines.get(j)[1]; y++ ) {
+						temp_image.setRGB(x,y, image.getRGB(x, vert_lines.get(j)[0]+y ) );
+					}
+				}
+				try {
+					images[images_counter] = temp_image;
+					images_counter++;
+					File outputfile = new File("zoomed_numbers" + j + ".png");
+					ImageIO.write(temp_image, "png", outputfile);
+					
+				} catch (IOException ioe ) {}
+		}
+		return images;
 	}
 	
 //=================================================================================================

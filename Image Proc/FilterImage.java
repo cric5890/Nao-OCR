@@ -92,16 +92,16 @@ public class FilterImage {
         imageFrame.setVisible(true);
         
         features.loadClusters();
-        System.out.println("Centers Loaded");
       }
     });
     
   }
  
-  public void scaleForFeatures(){
-	  while(changed_image.getWidth() < 50 || changed_image.getHeight() < 50){
-		  resizeImage(changed_image, 2);
+  public static BufferedImage scaleForFeatures(BufferedImage image){
+	  while(image.getWidth() < 50 || image.getHeight() < 50){
+		  image = resizeImage(image, 2);
 	  }
+	  return image;
   }
   
   
@@ -122,7 +122,7 @@ public class FilterImage {
   
   public void getFeature(){
 	  //convertToGrayScale(image);
-	  scaleForFeatures();
+	  scaleForFeatures(changed_image);
 	  changed_image = filterImage(changed_image, feature_filter);
 	  redrawImageFrame();
 	  float[] center = features.extractFeature(changed_image);
@@ -392,7 +392,7 @@ public class FilterImage {
 	/**
 		Counting rows from top to bottom
 	*/
-	public void resizeImage(BufferedImage image, double resize){
+	public static BufferedImage resizeImage(BufferedImage image, double resize){
 		try {
 			int[] old_rgb = image.getRGB(0,0, image.getWidth(), image.getHeight(), null, 0, image.getWidth());
 			
@@ -418,14 +418,18 @@ public class FilterImage {
 					}
 				}
 			}
-			changed_image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-			changed_image.setRGB(0, 0, width, height, new_rgb, 0, width );
-			redrawImageFrame();
+			BufferedImage temp = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+			temp.setRGB(0, 0, width, height, new_rgb, 0, width );
+			return temp;
+			//changed_image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+			//changed_image.setRGB(0, 0, width, height, new_rgb, 0, width );
+			//redrawImageFrame();
 		} catch (Exception e) {
 			System.out.println("Error on Resize input: " + e.getMessage() );
 		}
+		return null;
 	}
-	private int[] growImage(int[] rgb, double resize, int pos_x, int pos_y, int width, int height, int[] new_rgb, int image_width ) {
+	public static int[] growImage(int[] rgb, double resize, int pos_x, int pos_y, int width, int height, int[] new_rgb, int image_width ) {
 		Color c = new Color(rgb[pos_x + pos_y*image_width]);
 		int[] rgb_copy = new_rgb;
 		for ( int x = pos_x*(int)resize; x < pos_x*(int)resize + (int)resize; x++ ) {
@@ -449,7 +453,7 @@ public class FilterImage {
 	 * @param image_width	-	the old image width
 	 * @return
 	 */
-	private int averageShrink(int[] rgb, int width_div, int height_div, int pos_x, int pos_y, int image_width, int image_height) {
+	public static int averageShrink(int[] rgb, int width_div, int height_div, int pos_x, int pos_y, int image_width, int image_height) {
 		int sum = 0;
 		for ( int x = pos_x*width_div; x < pos_x*width_div + width_div; x++ ) {
 			for ( int y = pos_y*image_width*height_div; y < pos_y*image_width*height_div + image_width*height_div; y+= image_width ) {

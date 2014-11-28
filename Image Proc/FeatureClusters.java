@@ -232,6 +232,8 @@ import java.io.FileWriter;
 				
 				r.close();
 				
+				System.out.println("CLUSTERS LOADED");
+				
 			}catch(Exception e){
 				e.printStackTrace();
 			}
