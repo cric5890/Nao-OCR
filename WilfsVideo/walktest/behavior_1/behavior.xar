@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ChoregrapheProject xmlns="http://www.aldebaran-robotics.com/schema/choregraphe/project.xsd" xar_version="3">
+    <Box name="root" id="-1" localization="8" tooltip="Root box of Choregraphe&apos;s behavior. Highest level possible." x="0" y="0">
+        <bitmap>media/images/box/root.png</bitmap>
+        <script language="4">
+            <content>
+                <![CDATA[]]>
+</content>
+        </script>
+        <Input name="onLoad" type="1" type_size="1" nature="0" inner="1" tooltip="Signal sent when diagram is loaded." id="1" />
+        <Input name="onStart" type="1" type_size="1" nature="2" inner="0" tooltip="Box behavior starts when a signal is received on this input." id="2" />
+        <Input name="onStop" type="1" type_size="1" nature="3" inner="0" tooltip="Box behavior stops when a signal is received on this input." id="3" />
+        <Output name="onStopped" type="1" type_size="1" nature="1" inner="0" tooltip="Signal sent when box behavior is finished." id="4" />
+        <Timeline enable="0">
+            <BehaviorLayer name="behavior_layer1">
+                <BehaviorKeyframe name="keyframe1" index="1">
+                    <Diagram>
+                        <Box name="Python Script" id="1" localization="8" tooltip="This box contains a basic python script and can be used to create any python script box you would like.&#x0A;&#x0A;To edit its script, double-click on it." x="524" y="376">
+                            <bitmap>media/images/box/box-python-script.png</bitmap>
+                            <script language="4">
+                                <content>
+                                    <![CDATA[import time
+import math
+import threading
+import motion
+
+class MyClass(GeneratedClass):
+    def __init__(self):
+        GeneratedClass.__init__(self, False)
+
+    def onLoad(self):
+        self.motion = ALProxy("ALMotion")
+        self.shouldRun = False
+        self.x = 5
+        self.y = 0
+        self.theta = 0
+        self.timer = None
+        self.lock = threading.RLock()
+
+    def onUnload(self):
+        self.lock.acquire()
+        try:
+            self.shouldRun = False
+            if self.timer:
+                self.timer.cancel()
+                self.timer = None
+
+            self.x = 0
+            self.y = 0
+            self.theta = 0
+            self.motion.moveToward(0, 0, 0)
+            self.motion.waitUntilMoveIsFinished()
+        finally:
+            self.lock.release()
+
+    def onInput_onStop(self):
+        self.lock.acquire()
+        try:
+            self.onUnload()
+            self.onStopped()
+        finally:
+            self.lock.release()
+
+    def onInput_onStart(self):
+        self.lock.acquire()
+        try:
+            self.shouldRun = True
+            self.updateMovement()
+        finally:
+            self.lock.release()
+
+    def updateMovement(self):
+        self.lock.acquire()
+        try:
+            if self.timer:
+                self.timer.cancel()
+                self.timer = None
+            self.motion.setWalkArmsEnabled(True, True)
+
+           # enableArms = self.getParameter("Arms movement enabled")
+          #  self.motion.setMoveArmsEnabled(enableArms, enableArms)
+            #period = self.getParameter("Period of direction update (s)")
+
+            robotIP = "192.168.11.111"
+            PORT = 9559
+
+            try:
+                memoryProxy = ALProxy("ALMemory", robotIP, PORT)
+            except Exception, e:
+                print "Could not create proxy to ALMemory"
+                print "Error was: ", e
+
+            self.x = 3
+            self.y = 0
+            self.theta = 0
+
+            #self.motion.moveToward(self.x, self.y, self.theta)
+            self.motion.moveTo(self.x,self.y,self.theta)
+
+           # if self.shouldRun:
+           #     self.timer = threading.Timer(period, self.updateMovement)
+           #     self.timer.start()
+        finally:
+            self.lock.release()]]>
+</content>
+                            </script>
+                            <Input name="onLoad" type="1" type_size="1" nature="0" inner="1" tooltip="Signal sent when diagram is loaded." id="1" />
+                            <Input name="onStart" type="1" type_size="1" nature="2" inner="0" tooltip="Box behavior starts when a signal is received on this input." id="2" />
+                            <Input name="onStop" type="1" type_size="1" nature="3" inner="0" tooltip="Box behavior stops when a signal is received on this input." id="3" />
+                            <Output name="onStopped" type="1" type_size="1" nature="1" inner="0" tooltip="Signal sent when box behavior is finished." id="4" />
+                        </Box>
+                        <Link inputowner="0" indexofinput="4" outputowner="1" indexofoutput="4" />
+                        <Link inputowner="1" indexofinput="2" outputowner="0" indexofoutput="2" />
+                    </Diagram>
+                </BehaviorKeyframe>
+            </BehaviorLayer>
+        </Timeline>
+    </Box>
+</ChoregrapheProject>

@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ChoregrapheProject xmlns="http://www.aldebaran-robotics.com/schema/choregraphe/project.xsd" xar_version="3">
+    <Box name="root" id="-1" localization="8" tooltip="Root box of Choregraphe&apos;s behavior. Highest level possible." x="0" y="0">
+        <bitmap>media/images/box/root.png</bitmap>
+        <script language="4">
+            <content>
+                <![CDATA[]]>
+</content>
+        </script>
+        <Input name="onLoad" type="1" type_size="1" nature="0" inner="1" tooltip="Signal sent when diagram is loaded." id="1" />
+        <Input name="onStart" type="1" type_size="1" nature="2" inner="0" tooltip="Box behavior starts when a signal is received on this input." id="2" />
+        <Input name="onStop" type="1" type_size="1" nature="3" inner="0" tooltip="Box behavior stops when a signal is received on this input." id="3" />
+        <Output name="onStopped" type="1" type_size="1" nature="1" inner="0" tooltip="Signal sent when box behavior is finished." id="4" />
+        <Timeline enable="0">
+            <BehaviorLayer name="behavior_layer1">
+                <BehaviorKeyframe name="keyframe1" index="1">
+                    <Diagram>
+                        <Box name="Tweet Picture" id="2" localization="8" tooltip="Take a picture with one of the cameras camera and store it in his memory in ~/recordings/cameras. The image format is JPG.&#x0A;&#x0A;V1.1.0&#x0A;" x="554" y="128">
+                            <bitmap>media/images/box/interaction/picture.png</bitmap>
+                            <script language="4">
+                                <content>
+                                    <![CDATA[import time
+import socket
+import urllib
+
+class MyClass(GeneratedClass):
+
+    host = 'wilfbot.esy.es'
+    port = 80
+
+    def __init__(self):
+        GeneratedClass.__init__(self, False)
+        self.resolutionMap = {
+            '160 x 120': 0,
+            '320 x 240': 1,
+            '640 x 480': 2,
+            '1280 x 960': 3
+        }
+        self.cameraMap = {
+            'Top': 0,
+            'Bottom': 1
+        }
+
+        self.recordFolder = "/home/nao/recordings/cameras/"
+
+    def onLoad(self):
+        self.bIsRunning = False
+        try:
+            self.photoCapture = ALProxy( "ALPhotoCapture" )
+        except Exception as e:
+            self.photoCapture = None
+            self.logger.error(e)
+
+    def onUnload(self):
+        self.bMustStop = True
+
+    def onInput_onStart(self, s):
+        self.msg = s;
+        self.bMustStop = False
+
+        #Tweeting Pictures!
+        resolution = self.resolutionMap[self.getParameter("Resolution")]
+        cameraID = self.cameraMap[self.getParameter("Camera")]
+        fileName = self.getParameter("File Name")
+        if self.photoCapture:
+            self.photoCapture.setResolution(resolution)
+            self.photoCapture.setCameraID(cameraID)
+            self.photoCapture.setPictureFormat("jpg")
+            self.photoCapture.takePicture( self.recordFolder, fileName )
+
+        self.tweet_photo(self.msg, self.recordFolder, fileName + ".jpg")
+
+        self.bIsRunning = False
+
+    def onInput_onStop(self):
+        self.onUnload()
+        self.onStopped()
+
+    def tweet(self, message):
+        content = {'tweet': message}
+        body = urllib.urlencode (content)
+
+        header =  "POST /nao/tweet.php HTTP/1.1\r\n"
+        header = header + "Host: wilfbot.esy.es\r\n"
+        header = header + "User-Agent: Mozilla/5.0\r\n"
+        header = header + "Accept-Language: en-US,en;q=0.8\r\n"
+        header = header + "Connection: keep-alive\r\n"
+        header = header + "Cache-Control: max-age=0\r\n"
+        header = header + "Content-Length: " + str(len(body)) + "\r\n"
+        header = header + "Content-Type: application/x-www-form-urlencoded\r\n"
+        header = header + "\r\n"
+
+        data = header + body
+
+        client = socket.socket (socket.AF_INET, socket.SOCK_STREAM)
+        client.connect ((self.host, self.port))
+        client.send (data)
+
+        data = client.recv (1024)
+        client.close()
+
+        return data
+
+    def tweet_photo(self, message, file_loc, filename):
+        with open(file_loc+filename, "rb") as image_file:
+            image_contents = image_file.read()
+
+        boundary = "SUPERCOOLFILESEPERATORSTRING$$$$"
+
+        body = "--" + boundary + "\r\n"
+        body = body + "Content-Disposition: form-data; name=\"tweet\"\r\n\r\n"
+        body = body + message + "\r\n"
+        body = body + "--" + boundary + "\r\n"
+        body = body + "Content-Disposition: form-data; name=\"file\"; filename=\"" + filename + "\"\r\n"
+        body = body + "Content-Type: image/jpeg\r\n\r\n"
+        body = body + image_contents + "\r\n"
+        body = body + "--" + boundary + "--"
+
+        header =  "POST /nao/tweet.php HTTP/1.1\r\n"
+        header = header + "Host: wilfbot.esy.es\r\n"
+        header = header + "User-Agent: Mozilla/5.0\r\n"
+        header = header + "Accept-Language: en-US,en;q=0.8\r\n"
+        header = header + "Connection: keep-alive\r\n"
+        header = header + "Cache-Control: max-age=0\r\n"
+        header = header + "Content-Length: " + str(len(body)) + "\r\n"
+        header = header + "Content-Type: multipart/form-data; boundary=" + boundary + "\r\n"
+        header = header + "\r\n"
+
+        data = header + body
+
+        client = socket.socket (socket.AF_INET, socket.SOCK_STREAM)
+        client.connect ((self.host, self.port))
+        client.send (data)
+
+        data = client.recv (1024)
+        client.close()
+
+        return data]]>
+</content>
+                            </script>
+                            <Input name="onLoad" type="1" type_size="1" nature="0" inner="1" tooltip="Signal sent when diagram is loaded." id="1" />
+                            <Input name="onStart" type="3" type_size="1" nature="2" inner="0" tooltip="Box behavior starts when a signal is received on this input." id="2" />
+                            <Output name="onStopped" type="1" type_size="1" nature="1" inner="0" tooltip="Signal sent when box behavior is finished." id="3" />
+                            <Parameter name="Resolution" inherits_from_parent="0" content_type="3" value="1280 x 960" default_value="640 x 480" custom_choice="0" tooltip="Image resolution." id="4">
+                                <Choice value="160 x 120" />
+                                <Choice value="320 x 240" />
+                                <Choice value="640 x 480" />
+                                <Choice value="1280 x 960" />
+                            </Parameter>
+                            <Parameter name="File Name" inherits_from_parent="0" content_type="3" value="image" default_value="image" custom_choice="0" tooltip="Name of the file without its extension." id="5" />
+                            <Parameter name="Camera" inherits_from_parent="0" content_type="3" value="Top" default_value="Top" custom_choice="0" tooltip="Enables to select the camera (Top or Bottom) that will take the picture." id="6">
+                                <Choice value="Top" />
+                                <Choice value="Bottom" />
+                            </Parameter>
+                        </Box>
+                        <Link inputowner="0" indexofinput="4" outputowner="2" indexofoutput="3" />
+                    </Diagram>
+                </BehaviorKeyframe>
+            </BehaviorLayer>
+        </Timeline>
+    </Box>
+</ChoregrapheProject>
