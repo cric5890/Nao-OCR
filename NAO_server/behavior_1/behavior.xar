@@ -200,9 +200,19 @@ class MyClass(GeneratedClass):
                     break
 
                 if data=='$':
-                    self.logger.info('Execute:'+total_data)
-                    self.onValidStringStart()
-                    self.onValidString( total_data )
+                    self.logger.info(total_data[0:3])
+                    if total_data[0:3] == 'say':
+                        self.logger.info('Execute:'+total_data[3:])
+                        self.onValidStringStart()
+                        self.onValidString( total_data[3:] )
+                    elif total_data[0:4] == 'walk':
+                        self.logger.info('Execute:'+total_data[4])
+                        self.onWalkStart()
+                        self.onWalk( total_data[4] )
+                    else:
+                        self.logger.info('Error')
+                        self.onValidStringStart()
+                        self.onValidString( 'Bad format' )
                     # Convert the command string to an array of strings.
                     # We use an array instead of separate output
                     # signals to avoid race conditions on the 10 different signals
@@ -325,9 +335,11 @@ class MyClass(GeneratedClass):
                             <Output name="OnDisconnect" type="1" type_size="1" nature="2" inner="0" tooltip="" id="6" />
                             <Output name="onValidString" type="3" type_size="1" nature="2" inner="0" tooltip="This contains output for nao to say, this was received from the server." id="7" />
                             <Output name="onValidStringStart" type="1" type_size="1" nature="2" inner="0" tooltip="Calls the server said init." id="8" />
-                            <Parameter name="port" inherits_from_parent="0" content_type="1" value="5006" default_value="5005" min="0" max="9999" tooltip="" id="9" />
+                            <Output name="onWalkStart" type="1" type_size="1" nature="2" inner="0" tooltip="" id="9" />
+                            <Output name="onWalk" type="3" type_size="1" nature="2" inner="0" tooltip="" id="10" />
+                            <Parameter name="port" inherits_from_parent="0" content_type="1" value="5006" default_value="5005" min="0" max="9999" tooltip="" id="11" />
                         </Box>
-                        <Box name="Say CON" id="4" localization="8" tooltip="Say some text. Note that you must open the box to enter the text." x="727" y="325">
+                        <Box name="Say CON" id="4" localization="8" tooltip="Say some text. Note that you must open the box to enter the text." x="738" y="168">
                             <bitmap>media/images/box/interaction/say.png</bitmap>
                             <script language="4">
                                 <content>
@@ -528,7 +540,7 @@ class MyClass(GeneratedClass):
                             </Timeline>
                             <Resource name="Speech" type="Lock" timeout="0" />
                         </Box>
-                        <Box name="Say DISCON" id="5" localization="8" tooltip="Say some text. Note that you must open the box to enter the text." x="706" y="470">
+                        <Box name="Say DISCON" id="5" localization="8" tooltip="Say some text. Note that you must open the box to enter the text." x="859" y="173">
                             <bitmap>media/images/box/interaction/say.png</bitmap>
                             <script language="4">
                                 <content>
@@ -729,7 +741,7 @@ class MyClass(GeneratedClass):
                             </Timeline>
                             <Resource name="Speech" type="Lock" timeout="0" />
                         </Box>
-                        <Box name="Server Said" id="1" localization="8" tooltip="This box is empty and should be used to create any box diagram you would like.&#x0A;&#x0A;To edit its diagram, double-click on it." x="925" y="443">
+                        <Box name="Server Said" id="1" localization="8" tooltip="This box is empty and should be used to create any box diagram you would like.&#x0A;&#x0A;To edit its diagram, double-click on it." x="971" y="258">
                             <bitmap>media/images/box/box-diagram.png</bitmap>
                             <script language="4">
                                 <content>
@@ -847,6 +859,71 @@ class MyClass(GeneratedClass):
                                 </BehaviorLayer>
                             </Timeline>
                         </Box>
+                        <Box name="Move To" id="6" localization="8" tooltip="Make the robot move to a configured point relative to its current location." x="838" y="353">
+                            <bitmap>media/images/box/movement/walk_forward.png</bitmap>
+                            <script language="4">
+                                <content>
+                                    <![CDATA[
+class MyClass(GeneratedClass):
+    def __init__(self):
+        GeneratedClass.__init__(self, False)
+        self.motion = ALProxy("ALMotion")
+        self.positionErrorThresholdPos = 0.01
+        self.positionErrorThresholdAng = 0.03
+
+    def onLoad(self):
+        pass
+
+    def onUnload(self):
+        self.motion.moveToward(0.0, 0.0, 0.0)
+
+    def onInput_onStart(self):
+        import almath
+        # The command position estimation will be set to the sensor position
+        # when the robot starts moving, so we use sensors first and commands later.
+        initPosition = almath.Pose2D(self.motion.getRobotPosition(True))
+        targetDistance = almath.Pose2D(self.getParameter("Distance X (m)"),
+            self.getParameter("Distance Y (m)"),
+            self.getParameter("Theta (deg)") * almath.PI / 180)
+        expectedEndPosition = initPosition * targetDistance
+        enableArms = self.getParameter("Arms movement enabled")
+        self.motion.setMoveArmsEnabled(enableArms, enableArms)
+        self.motion.moveTo(self.getParameter("Distance X (m)"),
+        #self.motion.moveTo(self.getParameter("Distance X (m)"),
+            self.getParameter("Distance Y (m)"),
+            self.getParameter("Theta (deg)") * almath.PI / 180)
+
+        # The move is finished so output
+        realEndPosition = almath.Pose2D(self.motion.getRobotPosition(False))
+        positionError = realEndPosition.diff(expectedEndPosition)
+        positionError.theta = almath.modulo2PI(positionError.theta)
+        if (abs(positionError.x) < self.positionErrorThresholdPos
+            and abs(positionError.y) < self.positionErrorThresholdPos
+            and abs(positionError.theta) < self.positionErrorThresholdAng):
+            self.onArrivedAtDestination()
+        else:
+            self.onStoppedBeforeArriving(positionError.toVector())
+
+    def onInput_onStop(self):
+        self.onUnload()
+
+    def onInput_distance(self, p):
+        self.setParameter("Distance X (m)", int(p))
+        self.onStopped(self)]]>
+</content>
+                            </script>
+                            <Input name="onLoad" type="1" type_size="1" nature="0" inner="1" tooltip="Signal sent when Diagram is loaded." id="1" />
+                            <Input name="onStart" type="1" type_size="1" nature="2" inner="0" tooltip="Box behavior starts when a signal is received on this input." id="2" />
+                            <Input name="onStop" type="1" type_size="1" nature="3" inner="0" tooltip="Box behavior stops when a signal is received on this input." id="3" />
+                            <Input name="distance" type="3" type_size="1" nature="1" inner="0" tooltip="" id="4" />
+                            <Output name="onArrivedAtDestination" type="1" type_size="1" nature="1" inner="0" tooltip="Signal sent when the robot arrives at its destination." id="5" />
+                            <Output name="onStoppedBeforeArriving" type="0" type_size="1" nature="1" inner="0" tooltip="Signal sent when the robot stops before arriving to its destination. Returns a vector [x (m), y (m), theta(rad)] with the remaining distance up to the destination. This distance is expressed in the ROBOT frame." id="6" />
+                            <Parameter name="Distance X (m)" inherits_from_parent="0" content_type="2" value="1" default_value="0.2" min="-5" max="10" tooltip="The distance in meters for forward/backward motion. Positive value&#x0A;means forward, negative value means backward." id="7" />
+                            <Parameter name="Distance Y (m)" inherits_from_parent="0" content_type="2" value="0" default_value="0" min="-5" max="5" tooltip="The distance in meters for lateral motion. Positive value means left, negative&#x0A;value means right." id="8" />
+                            <Parameter name="Theta (deg)" inherits_from_parent="0" content_type="2" value="0" default_value="0" min="-180" max="180" tooltip="The orientation in degrees for final rotation. Positive value means anticlockwise,&#x0A;negative value means clockwise." id="9" />
+                            <Parameter name="Arms movement enabled" inherits_from_parent="0" content_type="0" value="1" default_value="1" tooltip="Enables natural motion of the arms." id="10" />
+                            <Resource name="Legs" type="Lock" timeout="0" />
+                        </Box>
                         <Link inputowner="2" indexofinput="2" outputowner="0" indexofoutput="2" />
                         <Link inputowner="0" indexofinput="4" outputowner="2" indexofoutput="7" />
                         <Link inputowner="2" indexofinput="3" outputowner="2" indexofoutput="10" />
@@ -856,6 +933,10 @@ class MyClass(GeneratedClass):
                         <Link inputowner="2" indexofinput="2" outputowner="3" indexofoutput="4" />
                         <Link inputowner="1" indexofinput="2" outputowner="3" indexofoutput="8" />
                         <Link inputowner="1" indexofinput="4" outputowner="3" indexofoutput="7" />
+                        <Link inputowner="6" indexofinput="2" outputowner="3" indexofoutput="9" />
+                        <Link inputowner="6" indexofinput="4" outputowner="3" indexofoutput="10" />
+                        <Link inputowner="6" indexofinput="3" outputowner="6" indexofoutput="5" />
+                        <Link inputowner="6" indexofinput="3" outputowner="6" indexofoutput="6" />
                     </Diagram>
                 </BehaviorKeyframe>
             </BehaviorLayer>
