@@ -14,8 +14,8 @@
         <Timeline enable="0">
             <BehaviorLayer name="behavior_layer1">
                 <BehaviorKeyframe name="keyframe1" index="1">
-                    <Diagram>
-                        <Box name="Tactile Head" id="2" localization="8" tooltip="Detect touch on head tactile sensor." x="268" y="149">
+                    <Diagram scale="100">
+                        <Box name="Tactile Head" id="2" localization="8" tooltip="Detect touch on head tactile sensor." x="237" y="142">
                             <bitmap>media/images/box/sensors/tactileHead.png</bitmap>
                             <script language="4">
                                 <content>
@@ -158,7 +158,7 @@
                             </Timeline>
                             <Resource name="Head-sequence" type="Lock" timeout="0" />
                         </Box>
-                        <Box name="Socket Server" id="3" localization="8" tooltip="This box contains a basic python script and can be used to create any python script box you would like.&#x0A;&#x0A;To edit its script, double-click on it." x="490" y="282">
+                        <Box name="Socket Server" id="3" localization="8" tooltip="This box contains a basic python script and can be used to create any python script box you would like.&#x0A;&#x0A;To edit its script, double-click on it." x="459" y="275">
                             <bitmap>media/images/box/box-python-script.png</bitmap>
                             <script language="4">
                                 <content>
@@ -199,16 +199,12 @@ class MyClass(GeneratedClass):
                     self.onDisconnect()
                     break
 
-                if data=='$':
-                    self.logger.info(total_data[0:3])
+                if data=='\n':
                     if total_data[0:3] == 'say':
-                        self.logger.info('Execute:'+total_data[3:])
                         self.onValidStringStart()
                         self.onValidString( total_data[3:] )
                     elif total_data[0:4] == 'walk':
-                        self.logger.info('Execute:'+total_data[4])
-                        self.onWalkStart()
-                        self.onWalk( total_data[4] )
+                        self.onWalk( float(total_data[4:]) )
                     else:
                         self.logger.info('Error')
                         self.onValidStringStart()
@@ -267,7 +263,7 @@ class MyClass(GeneratedClass):
             self.logger.info('Connected to '+str(address)+"/"+str(self.connectedSocket))
 
             # Send back a welcome message. The ~ prefix indicates a small talk message (i.e. can be ignored by client)
-            self.connectedSocket.sendall("~Hello, NAO4Scratch speaking! Waiting for your commands!\n\r")
+            #self.connectedSocket.sendall("~Hello, NAO4Scratch speaking! Waiting for your commands!\n\r")
 
             self.handleConnection()
 
@@ -335,11 +331,10 @@ class MyClass(GeneratedClass):
                             <Output name="OnDisconnect" type="1" type_size="1" nature="2" inner="0" tooltip="" id="6" />
                             <Output name="onValidString" type="3" type_size="1" nature="2" inner="0" tooltip="This contains output for nao to say, this was received from the server." id="7" />
                             <Output name="onValidStringStart" type="1" type_size="1" nature="2" inner="0" tooltip="Calls the server said init." id="8" />
-                            <Output name="onWalkStart" type="1" type_size="1" nature="2" inner="0" tooltip="" id="9" />
-                            <Output name="onWalk" type="3" type_size="1" nature="2" inner="0" tooltip="" id="10" />
-                            <Parameter name="port" inherits_from_parent="0" content_type="1" value="5006" default_value="5005" min="0" max="9999" tooltip="" id="11" />
+                            <Output name="onWalk" type="2" type_size="1" nature="2" inner="0" tooltip="" id="9" />
+                            <Parameter name="port" inherits_from_parent="0" content_type="1" value="5011" default_value="5005" min="0" max="9999" tooltip="" id="10" />
                         </Box>
-                        <Box name="Say CON" id="4" localization="8" tooltip="Say some text. Note that you must open the box to enter the text." x="738" y="168">
+                        <Box name="Say CON" id="4" localization="8" tooltip="Say some text. Note that you must open the box to enter the text." x="707" y="161">
                             <bitmap>media/images/box/interaction/say.png</bitmap>
                             <script language="4">
                                 <content>
@@ -540,7 +535,7 @@ class MyClass(GeneratedClass):
                             </Timeline>
                             <Resource name="Speech" type="Lock" timeout="0" />
                         </Box>
-                        <Box name="Say DISCON" id="5" localization="8" tooltip="Say some text. Note that you must open the box to enter the text." x="859" y="173">
+                        <Box name="Say DISCON" id="5" localization="8" tooltip="Say some text. Note that you must open the box to enter the text." x="828" y="166">
                             <bitmap>media/images/box/interaction/say.png</bitmap>
                             <script language="4">
                                 <content>
@@ -741,7 +736,7 @@ class MyClass(GeneratedClass):
                             </Timeline>
                             <Resource name="Speech" type="Lock" timeout="0" />
                         </Box>
-                        <Box name="Server Said" id="1" localization="8" tooltip="This box is empty and should be used to create any box diagram you would like.&#x0A;&#x0A;To edit its diagram, double-click on it." x="971" y="258">
+                        <Box name="Server Said" id="1" localization="8" tooltip="This box is empty and should be used to create any box diagram you would like.&#x0A;&#x0A;To edit its diagram, double-click on it." x="940" y="251">
                             <bitmap>media/images/box/box-diagram.png</bitmap>
                             <script language="4">
                                 <content>
@@ -859,37 +854,46 @@ class MyClass(GeneratedClass):
                                 </BehaviorLayer>
                             </Timeline>
                         </Box>
-                        <Box name="Move To" id="6" localization="8" tooltip="Make the robot move to a configured point relative to its current location." x="838" y="353">
-                            <bitmap>media/images/box/movement/walk_forward.png</bitmap>
+                        <Box name="Walk in X" id="7" localization="8" tooltip="This box contains a basic python script and can be used to create any python script box you would like.&#x0A;&#x0A;To edit its script, double-click on it." x="637" y="394">
+                            <bitmap>media/images/box/box-python-script.png</bitmap>
                             <script language="4">
                                 <content>
-                                    <![CDATA[
-class MyClass(GeneratedClass):
+                                    <![CDATA[class MyClass(GeneratedClass):
     def __init__(self):
         GeneratedClass.__init__(self, False)
         self.motion = ALProxy("ALMotion")
         self.positionErrorThresholdPos = 0.01
         self.positionErrorThresholdAng = 0.03
 
+
     def onLoad(self):
+        #put initialization code here
         pass
 
     def onUnload(self):
         self.motion.moveToward(0.0, 0.0, 0.0)
+        pass
 
     def onInput_onStart(self):
+        #self.onStopped() #activate the output of the box
+        pass
+
+    def onInput_onStop(self):
+        self.onUnload() #it is recommended to reuse the clean-up as the box is stopped
+        self.onStopped() #activate the output of the box
+
+    def onInput_doWalk(self, p):
         import almath
         # The command position estimation will be set to the sensor position
         # when the robot starts moving, so we use sensors first and commands later.
         initPosition = almath.Pose2D(self.motion.getRobotPosition(True))
-        targetDistance = almath.Pose2D(self.getParameter("Distance X (m)"),
+        targetDistance = almath.Pose2D(p,
             self.getParameter("Distance Y (m)"),
             self.getParameter("Theta (deg)") * almath.PI / 180)
         expectedEndPosition = initPosition * targetDistance
         enableArms = self.getParameter("Arms movement enabled")
         self.motion.setMoveArmsEnabled(enableArms, enableArms)
-        self.motion.moveTo(self.getParameter("Distance X (m)"),
-        #self.motion.moveTo(self.getParameter("Distance X (m)"),
+        self.motion.moveTo(p,
             self.getParameter("Distance Y (m)"),
             self.getParameter("Theta (deg)") * almath.PI / 180)
 
@@ -902,27 +906,219 @@ class MyClass(GeneratedClass):
             and abs(positionError.theta) < self.positionErrorThresholdAng):
             self.onArrivedAtDestination()
         else:
-            self.onStoppedBeforeArriving(positionError.toVector())
+            self.onStoppedBeforeArriving(positionError.x)]]>
+</content>
+                            </script>
+                            <Input name="onLoad" type="1" type_size="1" nature="0" inner="1" tooltip="Signal sent when diagram is loaded." id="1" />
+                            <Input name="onStart" type="1" type_size="1" nature="2" inner="0" tooltip="Box behavior starts when a signal is received on this input." id="2" />
+                            <Input name="onStop" type="1" type_size="1" nature="3" inner="0" tooltip="Box behavior stops when a signal is received on this input." id="3" />
+                            <Input name="doWalk" type="2" type_size="1" nature="2" inner="0" tooltip="" id="4" />
+                            <Output name="onArrivedAtDestination" type="1" type_size="1" nature="1" inner="0" tooltip="Signal sent when box behavior is finished." id="5" />
+                            <Output name="onStoppedBeforeArriving" type="0" type_size="1" nature="1" inner="0" tooltip="" id="6" />
+                            <Parameter name="Distance Y (m)" inherits_from_parent="0" content_type="2" value="0" default_value="0" min="0" max="1" tooltip="" id="7" />
+                            <Parameter name="Theta (deg)" inherits_from_parent="0" content_type="2" value="0" default_value="0" min="0" max="1" tooltip="" id="8" />
+                            <Parameter name="Arms movement enabled" inherits_from_parent="0" content_type="0" value="1" default_value="1" tooltip="" id="9" />
+                        </Box>
+                        <Box name="Say DoneWalking" id="8" localization="8" tooltip="Say some text. Note that you must open the box to enter the text." x="897" y="446">
+                            <bitmap>media/images/box/interaction/say.png</bitmap>
+                            <script language="4">
+                                <content>
+                                    <![CDATA[class MyClass(GeneratedClass):
+    def __init__(self):
+        GeneratedClass.__init__(self, False)
+
+    def onLoad(self):
+        self.bIsRunning = False
+
+    def onUnload(self):
+        self.bIsRunning = False
+
+    def onInput_onStart(self):
+        self.bIsRunning = True
 
     def onInput_onStop(self):
-        self.onUnload()
-
-    def onInput_distance(self, p):
-        self.setParameter("Distance X (m)", int(p))
-        self.onStopped(self)]]>
+        if( self.bIsRunning ):
+            self.onUnload()
+            self.onStopped()]]>
 </content>
                             </script>
                             <Input name="onLoad" type="1" type_size="1" nature="0" inner="1" tooltip="Signal sent when Diagram is loaded." id="1" />
-                            <Input name="onStart" type="1" type_size="1" nature="2" inner="0" tooltip="Box behavior starts when a signal is received on this input." id="2" />
-                            <Input name="onStop" type="1" type_size="1" nature="3" inner="0" tooltip="Box behavior stops when a signal is received on this input." id="3" />
-                            <Input name="distance" type="3" type_size="1" nature="1" inner="0" tooltip="" id="4" />
-                            <Output name="onArrivedAtDestination" type="1" type_size="1" nature="1" inner="0" tooltip="Signal sent when the robot arrives at its destination." id="5" />
-                            <Output name="onStoppedBeforeArriving" type="0" type_size="1" nature="1" inner="0" tooltip="Signal sent when the robot stops before arriving to its destination. Returns a vector [x (m), y (m), theta(rad)] with the remaining distance up to the destination. This distance is expressed in the ROBOT frame." id="6" />
-                            <Parameter name="Distance X (m)" inherits_from_parent="0" content_type="2" value="1" default_value="0.2" min="-5" max="10" tooltip="The distance in meters for forward/backward motion. Positive value&#x0A;means forward, negative value means backward." id="7" />
-                            <Parameter name="Distance Y (m)" inherits_from_parent="0" content_type="2" value="0" default_value="0" min="-5" max="5" tooltip="The distance in meters for lateral motion. Positive value means left, negative&#x0A;value means right." id="8" />
-                            <Parameter name="Theta (deg)" inherits_from_parent="0" content_type="2" value="0" default_value="0" min="-180" max="180" tooltip="The orientation in degrees for final rotation. Positive value means anticlockwise,&#x0A;negative value means clockwise." id="9" />
-                            <Parameter name="Arms movement enabled" inherits_from_parent="0" content_type="0" value="1" default_value="1" tooltip="Enables natural motion of the arms." id="10" />
-                            <Resource name="Legs" type="Lock" timeout="0" />
+                            <Input name="onStart" type="1" type_size="1" nature="2" inner="0" tooltip="Box behavior starts when a signal is received on this Input." id="2" />
+                            <Input name="onStop" type="1" type_size="1" nature="3" inner="0" tooltip="Box behavior stops when a signal is received on this Input." id="3" />
+                            <Output name="onStopped" type="1" type_size="1" nature="1" inner="0" tooltip="Signal sent when box behavior is finished or stopped." id="4" />
+                            <Parameter name="Voice shaping (%)" inherits_from_parent="0" content_type="1" value="100" default_value="100" min="50" max="150" tooltip='Used to modify at runtime the voice feature (tone, speed). In a slighty&#x0A;different way than pitch and speed, it gives a kind of &quot;gender or age&#x0A;modification&quot; effect.&#x0A;&#x0A;For instance, a quite good male derivation of female voice can be&#x0A;obtained setting this parameter to 78%.&#x0A;&#x0A;Note: For a better effect, you can compensate this parameter with the&#x0A;speed parameter. For example, if you want to decrease by 20% the voice&#x0A;shaping, you will have to increase by 20% the speed to keep a constant&#x0A;average speed.&#x0A;&#x0A;!Warning! This feature is not available yet in Japanese, Chinese and Korean.' id="5" />
+                            <Parameter name="Speed (%)" inherits_from_parent="0" content_type="1" value="100" default_value="100" min="50" max="200" tooltip="Changes the speed of the voice.&#x0A;&#x0A;Note: For a better effect, you can compensate this parameter with the voice&#x0A;shaping parameter. For example, if you want to increase by 20% the speed, you&#x0A;will have to decrease by 20% the voice shaping to keep a constant average&#x0A;speed.&#x0A;&#x0A;!Warning! This feature is not available yet in Japanese, Chinese and Korean." id="6" />
+                            <Timeline enable="0">
+                                <BehaviorLayer name="behavior_layer1">
+                                    <BehaviorKeyframe name="keyframe1" index="1">
+                                        <Diagram>
+                                            <Box name="Say Text" id="2" localization="8" tooltip="Say the text received on its input." x="422" y="65">
+                                                <bitmap>media/images/box/interaction/say.png</bitmap>
+                                                <script language="4">
+                                                    <content>
+                                                        <![CDATA[import time
+
+class MyClass(GeneratedClass):
+    def __init__(self):
+        GeneratedClass.__init__(self, False)
+        self.tts = ALProxy('ALTextToSpeech')
+        self.ttsStop = ALProxy('ALTextToSpeech', True) #Create another proxy as wait is blocking if audioout is remote
+
+    def onLoad(self):
+        self.bIsRunning = False
+        self.ids = []
+
+    def onUnload(self):
+        for id in self.ids:
+            try:
+                self.ttsStop.stop(id)
+            except:
+                pass
+        while( self.bIsRunning ):
+            time.sleep( 0.2 )
+
+    def onInput_onStart(self, p):
+        self.bIsRunning = True
+        try:
+            sentence = "\RSPD="+ str( self.getParameter("Speed (%)") ) + "\ "
+            sentence += "\VCT="+ str( self.getParameter("Voice shaping (%)") ) + "\ "
+            sentence += str(p)
+            sentence +=  "\RST\ "
+            id = self.tts.post.say(str(sentence))
+            self.ids.append(id)
+            self.tts.wait(id, 0)
+        finally:
+            try:
+                self.ids.remove(id)
+            except:
+                pass
+            if( self.ids == [] ):
+                self.onStopped() # activate output of the box
+                self.bIsRunning = False
+
+    def onInput_onStop(self):
+        self.onUnload()]]>
+</content>
+                                                </script>
+                                                <Input name="onLoad" type="1" type_size="1" nature="0" inner="1" tooltip="Signal sent when Diagram is loaded." id="1" />
+                                                <Input name="onStart" type="3" type_size="1" nature="2" inner="0" tooltip="Box behavior starts when a signal is received on this Input." id="2" />
+                                                <Input name="onStop" type="1" type_size="1" nature="3" inner="0" tooltip="Box behavior stops when a signal is received on this Input." id="3" />
+                                                <Output name="onStopped" type="1" type_size="1" nature="1" inner="0" tooltip="Signal sent when Box behavior is finished." id="4" />
+                                                <Parameter name="Voice shaping (%)" inherits_from_parent="1" content_type="1" value="100" default_value="100" min="50" max="150" tooltip='Used to modify at runtime the voice feature (tone, speed). In a slighty&#x0A;different way than pitch and speed, it gives a kind of &quot;gender or age&#x0A;modification&quot; effect.&#x0A;&#x0A;For instance, a quite good male derivation of female voice can be&#x0A;obtained setting this parameter to 78%.&#x0A;&#x0A;Note: For a better effect, you can compensate this parameter with the&#x0A;speed parameter. For example, if you want to decrease by 20% the voice&#x0A;shaping, you will have to increase by 20% the speed to keep a constant&#x0A;average speed.' id="5" />
+                                                <Parameter name="Speed (%)" inherits_from_parent="1" content_type="1" value="100" default_value="100" min="50" max="200" tooltip="Changes the speed of the voice.&#x0A;&#x0A;Note: For a better effect, you can compensate this parameter with the voice&#x0A;shaping parameter. For example, if you want to increase by 20% the speed, you&#x0A;will have to decrease by 20% the voice shaping to keep a constant average&#x0A;speed." id="6" />
+                                            </Box>
+                                            <Box name="Localized Text" id="5" localization="8" tooltip="Send on the output the text associated with the robot&apos;s current voice language.&#x0A;You can display and edit the text associated with any language by&#x0A;selecting the language in the combobox.&#x0A;&#x0A;!!Warning!! The text sent on the output is NOT the displayed one but the one&#x0A;associated with the robot&apos;s current voice language." plugin="localizationbox_plugin" x="114" y="68">
+                                                <bitmap>media/images/box/interaction/vocabulary.png</bitmap>
+                                                <script language="4">
+                                                    <content>
+                                                        <![CDATA[# /!\ Generated content. Do not edit!
+class MyClass(GeneratedClass):
+	def __init__(self):
+		try: # disable autoBind
+			GeneratedClass.__init__(self, False)
+		except TypeError: # if NAOqi < 1.14
+			GeneratedClass.__init__( self )
+
+		self.tts = ALProxy("ALTextToSpeech")
+		self.sentences = {
+			"Chinese" : " 你好 ",
+			"English" : " Done walking ",
+			"French" : " Bonjour ",
+			"German" : " Hallo ",
+			"Italian" : " Ciao ",
+			"Japanese" : " こんにちは ",
+			"Korean" : " 안녕하세요 ",
+			"Portuguese" : " Olá ",
+			"Brazilian" : " Olá ",
+			"Spanish" : " Hola ",
+			"Arabic" : " مرحبا ",
+			"Polish" : " Cześć ",
+			"Czech" : " Ahoj ",
+			"Dutch" : " Hallo ",
+			"Danish" : " Hej ",
+			"Finnish" : " Hei ",
+			"Swedish" : " Hallå ",
+			"Russian" : " Привет ",
+			"Turkish" : " Merhaba "
+		}
+
+	def onInput_onStart(self):
+		sDefaultLang = self.tts.getLanguage()
+		self.onStopped(self.sentences[sDefaultLang])]]>
+</content>
+                                                </script>
+                                                <pluginContent>
+                                                    <chinese>
+                                                        <![CDATA[你好]]>
+</chinese>
+                                                    <english>
+                                                        <![CDATA[Done walking]]>
+</english>
+                                                    <french>
+                                                        <![CDATA[Bonjour]]>
+</french>
+                                                    <german>
+                                                        <![CDATA[Hallo]]>
+</german>
+                                                    <italian>
+                                                        <![CDATA[Ciao]]>
+</italian>
+                                                    <japanese>
+                                                        <![CDATA[こんにちは]]>
+</japanese>
+                                                    <korean>
+                                                        <![CDATA[안녕하세요]]>
+</korean>
+                                                    <portuguese>
+                                                        <![CDATA[Olá]]>
+</portuguese>
+                                                    <brazilian>
+                                                        <![CDATA[Olá]]>
+</brazilian>
+                                                    <spanish>
+                                                        <![CDATA[Hola]]>
+</spanish>
+                                                    <arabic>
+                                                        <![CDATA[مرحبا]]>
+</arabic>
+                                                    <polish>
+                                                        <![CDATA[Cześć]]>
+</polish>
+                                                    <czech>
+                                                        <![CDATA[Ahoj]]>
+</czech>
+                                                    <dutch>
+                                                        <![CDATA[Hallo]]>
+</dutch>
+                                                    <danish>
+                                                        <![CDATA[Hej]]>
+</danish>
+                                                    <finnish>
+                                                        <![CDATA[Hei]]>
+</finnish>
+                                                    <swedish>
+                                                        <![CDATA[Hallå]]>
+</swedish>
+                                                    <russian>
+                                                        <![CDATA[Привет]]>
+</russian>
+                                                    <turkish>
+                                                        <![CDATA[Merhaba]]>
+</turkish>
+                                                    <language>1</language>
+                                                </pluginContent>
+                                                <Input name="onLoad" type="1" type_size="1" nature="0" inner="1" tooltip="Signal sent when diagram is loaded." id="1" />
+                                                <Input name="onStart" type="1" type_size="1" nature="2" inner="0" tooltip="Data is sent on the output when this input is stimulated." id="2" />
+                                                <Output name="onStopped" type="3" type_size="1" nature="1" inner="0" tooltip="Data sent when asked." id="3" />
+                                            </Box>
+                                            <Link inputowner="0" indexofinput="4" outputowner="2" indexofoutput="4" />
+                                            <Link inputowner="5" indexofinput="2" outputowner="0" indexofoutput="2" />
+                                            <Link inputowner="2" indexofinput="2" outputowner="5" indexofoutput="3" />
+                                        </Diagram>
+                                    </BehaviorKeyframe>
+                                </BehaviorLayer>
+                            </Timeline>
+                            <Resource name="Speech" type="Lock" timeout="0" />
                         </Box>
                         <Link inputowner="2" indexofinput="2" outputowner="0" indexofoutput="2" />
                         <Link inputowner="0" indexofinput="4" outputowner="2" indexofoutput="7" />
@@ -933,10 +1129,11 @@ class MyClass(GeneratedClass):
                         <Link inputowner="2" indexofinput="2" outputowner="3" indexofoutput="4" />
                         <Link inputowner="1" indexofinput="2" outputowner="3" indexofoutput="8" />
                         <Link inputowner="1" indexofinput="4" outputowner="3" indexofoutput="7" />
-                        <Link inputowner="6" indexofinput="2" outputowner="3" indexofoutput="9" />
-                        <Link inputowner="6" indexofinput="4" outputowner="3" indexofoutput="10" />
-                        <Link inputowner="6" indexofinput="3" outputowner="6" indexofoutput="5" />
-                        <Link inputowner="6" indexofinput="3" outputowner="6" indexofoutput="6" />
+                        <Link inputowner="3" indexofinput="3" outputowner="2" indexofoutput="10" />
+                        <Link inputowner="7" indexofinput="4" outputowner="3" indexofoutput="9" />
+                        <Link inputowner="0" indexofinput="4" outputowner="5" indexofoutput="4" />
+                        <Link inputowner="7" indexofinput="4" outputowner="7" indexofoutput="6" />
+                        <Link inputowner="8" indexofinput="2" outputowner="7" indexofoutput="5" />
                     </Diagram>
                 </BehaviorKeyframe>
             </BehaviorLayer>
