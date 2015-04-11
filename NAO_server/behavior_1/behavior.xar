@@ -15,7 +15,7 @@
             <BehaviorLayer name="behavior_layer1">
                 <BehaviorKeyframe name="keyframe1" index="1">
                     <Diagram scale="100">
-                        <Box name="Tactile Head" id="2" localization="8" tooltip="Detect touch on head tactile sensor." x="237" y="142">
+                        <Box name="Tactile Head" id="2" localization="8" tooltip="Detect touch on head tactile sensor." x="183" y="227">
                             <bitmap>media/images/box/sensors/tactileHead.png</bitmap>
                             <script language="4">
                                 <content>
